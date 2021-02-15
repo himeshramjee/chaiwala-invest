@@ -1,73 +1,75 @@
 var taxBrackets = [
-  {min: 1, max: 195850}
-  , {min: 195851, max: 305850}
-  , {min: 305851, max: 423300}
-  , {min: 423301, max: 555600}
-  , {min: 555601, max: 708310}
-  , {min: 708311, max: 1500000}
-  , {min: 1500001, max: 100000000}
+  { min: 1, max: 205900 },
+  { min: 205901, max: 321600 },
+  { min: 321601, max: 445100 },
+  { min: 445101, max: 584200 },
+  { min: 584201, max: 744800 },
+  { min: 744801, max: 1577300 },
+  { min: 1577301, max: 100000000 },
 ];
-     
+
 var taxBracketsRates = [
-  {key: 1, rate: 18}
-  , {key: 195851, rate: 26}
-  , {key: 305851, rate: 31}
-  , {key: 423301, rate: 36}
-  , {key: 555601, rate: 39}
-  , {key: 708311, rate: 41}
-  , {key: 1500001, rate: 45}
+  { key: 1, rate: 18 },
+  { key: 205901, rate: 26 },
+  { key: 321601, rate: 31 },
+  { key: 445101, rate: 36 },
+  { key: 584201, rate: 39 },
+  { key: 744801, rate: 41 },
+  { key: 1577301, rate: 45 },
 ];
-     
+
 var taxBracketsBase = [
-  {key: 1, base: 0}
-   , {key: 195851, base: 35253}
-   , {key: 305851, base: 63853}
-   , {key: 423301, base: 100263}
-   , {key: 555601, base: 147891}
-   , {key: 708311, base: 207448}
-   , {key: 1500001, base: 532041}
+  { key: 1, rate: 0 },
+  { key: 205901, rate: 37062 },
+  { key: 321601, rate: 67144 },
+  { key: 445101, rate: 105429 },
+  { key: 584201, rate: 155505 },
+  { key: 744801, rate: 218139 },
+  { key: 1577301, rate: 559464 },
 ];
 
 var taxBracketMin;
 var taxRate;
 var taxBase;
 
-function GetZATax(income) {                           
+function GetZATax(income) {
   var estimatedTaxAmount;
-  
-  taxBrackets.forEach(function(bracket) {
-    if ((bracket.min <= income) && (income <= bracket.max)) {
+
+  taxBrackets.forEach(function (bracket) {
+    if (bracket.min <= income && income <= bracket.max) {
       taxBracketMin = bracket.min;
     }
   });
-  
+
   Logger.log("Using bracket key: " + taxBracketMin);
-  taxBracketsRates.forEach(function(rates) {
+  taxBracketsRates.forEach(function (rates) {
     if (rates.key === taxBracketMin) {
       taxRate = rates.rate;
     }
   });
-  
+
   Logger.log("Using tax rate: " + taxRate);
-  taxBracketsBase.forEach(function(bases) {
+  taxBracketsBase.forEach(function (bases) {
     if (bases.key === taxBracketMin) {
       taxBase = bases.base;
     }
   });
-  
+
   Logger.log("Using tax base: " + taxBase);
-  
+
   if (taxBracketMin === 1) {
-    estimatedTaxAmount = taxBase + (income * taxRate / 100);
+    estimatedTaxAmount = taxBase + (income * taxRate) / 100;
   } else {
     var previousBracketMax = taxBracketMin - 1;
-    estimatedTaxAmount = taxBase + ((income - previousBracketMax) * taxRate / 100);
+    estimatedTaxAmount =
+      taxBase + ((income - previousBracketMax) * taxRate) / 100;
   }
-  
+
   if (estimatedTaxAmount <= 0) {
-    throw ("Couldn't calculate estimated tax amount for income value of " + income);
+    throw (
+      "Couldn't calculate estimated tax amount for income value of " + income
+    );
   }
-  
+
   return estimatedTaxAmount;
 }
-
