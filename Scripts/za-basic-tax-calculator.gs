@@ -19,13 +19,13 @@ var taxBracketsRates = [
 ];
 
 var taxBracketsBase = [
-  { key: 1, rate: 0 },
-  { key: 205901, rate: 37062 },
-  { key: 321601, rate: 67144 },
-  { key: 445101, rate: 105429 },
-  { key: 584201, rate: 155505 },
-  { key: 744801, rate: 218139 },
-  { key: 1577301, rate: 559464 },
+  { key: 1, base: 0 },
+  { key: 205901, base: 37062 },
+  { key: 321601, base: 67144 },
+  { key: 445101, base: 105429 },
+  { key: 584201, base: 155505 },
+  { key: 744801, base: 218139 },
+  { key: 1577301, base: 559464 },
 ];
 
 var taxBracketMin;
@@ -49,9 +49,9 @@ function GetZATax(income) {
   });
 
   Logger.log("Using tax rate: " + taxRate);
-  taxBracketsBase.forEach(function (bases) {
-    if (bases.key === taxBracketMin) {
-      taxBase = bases.base;
+  taxBracketsBase.forEach(function (bracketBase) {
+    if (bracketBase.key === taxBracketMin) {
+      taxBase = bracketBase.base;
     }
   });
 
@@ -71,5 +71,6 @@ function GetZATax(income) {
     );
   }
 
+  Logger.log("Estimated tax: " + estimatedTaxAmount);
   return estimatedTaxAmount;
 }
