@@ -34,7 +34,7 @@ var dataProviders = [
     "shortCode" : "BIN",
     "websiteUrl" : "https://binance.com",
     "apiEndpoint" : "https://apis.himesh.ramjee.co.za", // "https://api.binance.com"
-    "apiRootPath" : "/binance", // "/api/v3/ticker/price"
+    "apiRootPath" : "/binance/binance", // "/api/v3/ticker/price"
     "apiSymbolPricePath" : "/price?symbol={0}{1}",
     "auth" : {
       "readOnlyKey" : "",
@@ -46,9 +46,22 @@ var dataProviders = [
     "name" : "Crypto.Com",
     "shortCode" : "CRO",
     "websiteUrl" : "https://crypto.com",
-    "apiEndpoint" : "https://api.crypto.com",
-    "apiRootPath" : "/v2/public",
-    "apiSymbolPricePath" : "/get-ticker?instrument_name={0}{1}",
+    "apiEndpoint" : "https://apis.himesh.ramjee.co.za", // "https://api.crypto.com",
+    "apiRootPath" : "/cryptocom/cryptocom", // "/v2/public",
+    "apiSymbolPricePath" : "/get-ticker?instrument_name={0}_{1}",
+    "auth" : {
+      "readOnlyKey" : "",
+      "readOnlySecret" : ""
+    }
+  },
+  {
+    "id" : 5,
+    "name" : "Valr.com",
+    "shortCode" : "VAL",
+    "websiteUrl" : "https://valr.com",
+    "apiEndpoint" : "https://apis.himesh.ramjee.co.za", // "https://api.valr.com",
+    "apiRootPath" : "/valr/valr", // "/v1/public",
+    "apiSymbolPricePath" : "/v1/public/{0}{1}/marketsummary",
     "auth" : {
       "readOnlyKey" : "",
       "readOnlySecret" : ""
@@ -88,6 +101,8 @@ function extractPriceFromResponse(response, baseCurrency, quoteCurrency, provide
         return payload.price;
       case "CRO":
         return payload.result.data["a"];
+      case "VAL":
+        return payload.lastTradedPrice;
       default:
         return "Failed to parse price data. Unsupported provider: " + providerShortCode + ".";
     }
@@ -101,4 +116,5 @@ function getAPIEndpointForCryptoPricesTest() {
   Logger.log(getAPIEndpointForCryptoPrices("ETH", "BTC", "cg"));
   Logger.log(getAPIEndpointForCryptoPrices("ETH", "BTC", "cmc"));
   Logger.log(getAPIEndpointForCryptoPrices("BTC", "USDT", "cro"));
+  Logger.log(getAPIEndpointForCryptoPrices("BTC", "ZAR", "val"));
 }
