@@ -1,0 +1,99 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © himeshr
+
+// @version=5
+
+indicator("30m Engulfing Strategy", overlay = false)
+// strategy("30min Engulfing Strategy", overlay=true)
+
+addTrendLines() =>
+    // ==== Add EMAs ==== 
+    plot(ta.ema(close, 50), title = "50 EMA", style = plot.style_line, color = color.black)
+    plot(ta.ema(close, 20), title = "20 EMA", style = plot.style_line, color = color.orange)
+
+// ==== Get ATR data ====
+addATRBars() =>
+    // Useful for later: https://kodify.net/tradingview/indicators/average-true-range/
+    plot(ta.atr(14), title = "20 ATR", style = plot.style_columns, color = color.blue)
+
+// ==== Watch for Engulfing Candles ====
+runEngulfingConditionCheck() => 
+    leftBarOpenPrice = open[1]
+    leftBarHighPrice = high[1]
+    leftBarLowPrice = low[1]
+    leftBarClosePrice = close[1]
+    leftBarIsBullish = open[1] < close[1]
+    rightBarOpenPrice = open
+    rightBarHighPrice = high
+    rightBarLowPrice = low
+    rightBarClosePrice = close
+    rightBarIsBullish = open < close
+
+    includeWicksInEngulfing = input.bool(defval = true, title = "Include Wicks for Engulfing") 
+
+    isBullishEngulfing = (leftBarOpenPrice >= rightBarOpenPrice) and (leftBarOpenPrice <= rightBarClosePrice) and
+                        (leftBarClosePrice >= rightBarOpenPrice) and (leftBarClosePrice <= rightBarClosePrice)
+
+    isBearishEngulfing = (leftBarOpenPrice <= rightBarOpenPrice) and (leftBarOpenPrice >= rightBarClosePrice) and
+                        (leftBarClosePrice <= rightBarOpenPrice) and (leftBarClosePrice >= rightBarClosePrice)
+
+    isStrongEngulfing = false
+
+    if (includeWicksInEngulfing)
+        isStrongEngulfing := isBullishEngulfing
+                            and (leftBarLowPrice >= rightBarLowPrice)
+                            and (leftBarHighPrice <= rightBarHighPrice)
+
+        isStrongEngulfing := isStrongEngulfing or
+                            ((isBearishEngulfing)
+                            and (leftBarLowPrice >= rightBarLowPrice) 
+                            and (leftBarHighPrice <= rightBarHighPrice))
+
+    strongBullish = isBullishEngulfing and isStrongEngulfing and includeWicksInEngulfing
+    plotshape(strongBullish, title = "Strong Bullish",
+            style = shape.triangleup, location = location.belowbar, 
+            color = color.blue, size = size.auto)
+
+    notStrongBullish = isBullishEngulfing and not isStrongEngulfing and includeWicksInEngulfing
+    plotshape(notStrongBullish, title = "Bullish",
+            style = shape.triangleup, location = location.belowbar, 
+            color = color.green, size = size.auto)
+
+    strongBearish = isBearishEngulfing and isStrongEngulfing and includeWicksInEngulfing
+    plotshape(strongBearish, title = "Strong Bearish",
+            style = shape.triangledown , location = location.abovebar, 
+            color = color.black, size = size.auto)
+
+    notStrongBearish = isBearishEngulfing and not isStrongEngulfing and includeWicksInEngulfing
+    plotshape(notStrongBearish, title = "Bearish",
+            style = shape.triangledown , location = location.abovebar, 
+            color = color.red, size = size.auto)
+
+    alertcondition(isBullishEngulfing,
+                title = "Bullish Engulfing",
+                message = "[CurrencyPair] [TimeFrame], Bullish candle engulfing previous candle")
+    alertcondition(isBearishEngulfing,
+                title = "Bearish Engulfing",
+                message = "[CurrencyPair] [TimeFrame], Bearish candle  engulfing previous candle")
+
+//================================BACKTEST================================//
+
+// === INPUT BACKTEST RANGE === 
+// FromMonth = input.int(defval = 1, title = "From Month", minval = 1, maxval = 12) 
+// FromDay = input.int(defval = 1, title = "From Day", minval = 1, maxval = 31) 
+// FromYear = input.int(defval = 2017, title = "From Year", minval = 2017) 
+// ToMonth = input.int(defval = 1, title = "To Month", minval = 1, maxval = 12) 
+// ToDay = input.int(defval = 1, title = "To Day", minval = 1, maxval = 31) 
+// ToYear = input.int(defval = 9999, title = "To Year", minval = 2017) 
+
+// === FUNCTION EXAMPLE === 
+// start = timestamp(FromYear, FromMonth, FromDay, 00, 00) // backtest start window 
+// finish = timestamp(ToYear, ToMonth, ToDay, 23, 59) // backtest finish window 
+// window() => time >= start and time <= finish ? true : false // create function "within window of time" 
+
+// === EXECUTION === //Keep this commented out unless backtesting
+// strategy.entry("L", strategy.long, 25000, when = bullishEngulfing == 1 and window()) // buy long when "within window of time" AND crossover 
+// strategy.exit("exit", "L", profit = 1000, loss = 50)
+
+// strategy.entry("S", strategy.short, 25000, when = bearishEngulfing == 1 and window()) // buy long when "within window of time" AND crossover 
+// strategy.exit("exit", "S", profit = 1000, loss = 50)
