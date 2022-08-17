@@ -1,0 +1,25 @@
+//@version=5
+indicator(title="Time input example", overlay=true)
+
+// Create inputs
+vwapStartDate = input.time(timestamp("1 Jan 2022"), title="VWAP Start Date")
+vwapData      = input.source(hlc3, title="VWAP Data Source")
+
+// Calculate VWAP
+var sumPrices = 0.0
+var sumVolume = 0.0
+var powVolume = 0.0
+
+if time >= vwapStartDate
+    sumPrices += vwapData * volume
+    sumVolume += volume
+    powVolume += volume * math.pow(vwapData, 2)
+
+vwapValue    = sumPrices / sumVolume
+vwapVariance = math.max(powVolume / sumVolume - math.pow(vwapValue, 2), 0)
+vwapStdDev   = math.sqrt(vwapVariance)
+
+// Plot the VWAP and its standard deviation bands
+plot(vwapValue, color=color.blue, title="VWAP")
+plot(vwapValue + vwapStdDev, color=color.orange, title="Upper Band")
+plot(vwapValue - vwapStdDev, color=color.orange, title="Lower Band")
