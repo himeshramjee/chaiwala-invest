@@ -2,26 +2,16 @@
 
 indicator(title = "Market Maker Session Times", overlay = true)
 
-// Session Info
-  // Nasdaq - PreMarket Hours - 4AM - 9.30AM EST
-  // Nasdaq - Normal Hours - 9.30AM - 4PM EST / 14.30PM UTC - 21.00PM UTC
-  // Nasdaq - PostMarket Hours - 4PM - 8.00PM EST
-  // EST from UCT - -5H standard time and -4H during dayligth saving
-  // Sydney - AEST - UTC+10 "Australia/Sydney"
-  // Japan - JST - UTC+9 - "Japan/Tokyo"
-  // Berlin - CEST - UTC+2 - "Europe/Berlin"
-  // Johannesburg - SAST - UTC+2 - "Africa/Johannesburg"
-  // London - BST - UTC+1 - "Europe/London"
-  // New York - EST - UTC-4 - "America/New_York"
 // Inputs
 // ============================================================================================================
 // General time constraint for a strategy
-var int startDateTime = input.time(timestamp("1 Feb 2021 00:00"), title="Start Date", group="Strategy Date Range", 
+int startDateTime = input.time(timestamp("1 Feb 2021 00:00"), title="Start Date", group="Strategy Date Range", 
      tooltip="Specifies the starting date and time from which on the strategy simulates buy and sell trades.")
-var int endDateTime = input.time(timestamp("1 Feb 2022 11:59"), title="End Date", group="Strategy Date Range", 
+int endDateTime = input.time(timestamp("1 Feb 2022 11:59"), title="End Date", group="Strategy Date Range", 
      tooltip="Specifies the ending date and time from which on the strategy simulates buy and sell trades.")
+bool showMarketSessionInfoTable = false
+bool showMarketSessionOpenCandles = true
 
-// Create the inputs
 string sessionInput = input.session("0900-1730", title="Session Times", 
      group="Trading Session", tooltip="Use the checkboxes to select " + 
      "on which days of the week this session is active. The session " +
@@ -34,25 +24,41 @@ bool friSession = input.bool(true, title="Fri   ", group="Trading Session"
 bool satSession = input.bool(false, title="Sat  ", group="Trading Session", inline="d2")
 bool sunSession = input.bool(false, title="Sun ", group="Trading Session", inline="d2")
 
-// Make a days of week string based on the value of the checkboxes
-string sessionDays = ""
+// Calculate Session Info
+// ============================================================================================================
+getSessionDays(sunSession, monSession, tueSession, wedSession, thuSession, friSession, satSession) =>
+    string sessionDays = ""
+    if sunSession
+        sessionDays += "1"
+    if monSession
+        sessionDays += "2"
+    if tueSession
+        sessionDays += "3"
+    if wedSession
+        sessionDays += "4"
+    if thuSession
+        sessionDays += "5"
+    if friSession
+        sessionDays += "6"
+    if satSession
+        sessionDays += "7"
 
-if sunSession
-    sessionDays += "1"
-if monSession
-    sessionDays += "2"
-if tueSession
-    sessionDays += "3"
-if wedSession
-    sessionDays += "4"
-if thuSession
-    sessionDays += "5"
-if friSession
-    sessionDays += "6"
-if satSession
-    sessionDays += "7"
+// Make a days of week string based on the value of the input checkboxes
+string sessionDays = getSessionDays(sunSession, monSession, tueSession, wedSession, thuSession, friSession, satSession)
 
+// Nasdaq - PreMarket Hours - 4AM - 9.30AM EST
+// Nasdaq - Normal Hours - 9.30AM - 4PM EST / 14.30PM UTC - 21.00PM UTC
+// Nasdaq - PostMarket Hours - 4PM - 8.00PM EST
+// EST from UCT - -5H standard time and -4H during dayligth saving
+// Sydney - AEST - UTC+10 "Australia/Sydney"
+// Japan - JST - UTC+9 - "Japan/Tokyo"
+// Berlin - CEST - UTC+2 - "Europe/Berlin"
+// Johannesburg - SAST - UTC+2 - "Africa/Johannesburg"
+// London - BST - UTC+1 - "Europe/London"
+// New York - EST - UTC-4 - "America/New_York"
 // Configure with SAST perspective
+string scriptTimezoneInput = 
+     input.string("Africa/Johannesburg", tooltip = "Script Timezone", group="Sessions")
 string nasdaqNormalSessionInput = 
      input.session("1530-2200", "Nasdaq Session (SAST)", group="Sessions")
 string nasdaqDaysInput = 
@@ -62,60 +68,58 @@ string nasdaqSessionString =
 
 // Configure market locations with SAST perspective
 string sydneySession = 
-     input.session(title="Sydney", defval="0030-0700:23456", inline="Sydney Time", group="Sessions")
+     input.session(title="Sydney", defval="0000-0900:23456", inline="Sydney Time", group="Sessions")
 bool showSydneySession = 
      input.bool(title="Show Sydney", defval=true, inline="Show Sydney Time", group="Sessions")
 string tokyoSession = 
-     input.session(title="Tokyo", defval="2330-0600:23456", inline="Tokyo Time",group="Sessions")
+     input.session(title="Tokyo", defval="0200-0945:23456", inline="Tokyo Time",group="Sessions")
 bool showTokyoSession = 
      input.bool(title="Show Tokyo", defval=true, inline="Show Tokyo Time", group="Sessions")
 string berlinSession = 
-     input.session(title="Berlin", defval="1630-2300:23456", inline="Berlin Time", group="Sessions")
+     input.session(title="Berlin", defval="0900-1700:23456", inline="Berlin Time", group="Sessions")
 bool showBerlinSession = 
      input.bool(title="Show Berlin", defval=true, inline="Show Berlin Time", group="Sessions")
 string londonSession = 
-     input.session(title="London", defval="1530-2200:23456", inline="London Time", group="Sessions")
+     input.session(title="London", defval="0900-1700:23456", inline="London Time", group="Sessions")
 bool showLondonSession = 
      input.bool(title="Show London", defval=true, inline="Show London Time", group="Sessions")
 string newYorkSession = 
-     input.session(title="New York", defval="1030-1700:23456", inline="New York Time", group="Sessions")
+     input.session(title="New York", defval="1400-2300:23456", inline="New York Time", group="Sessions")
 bool showNewYorkSession = 
      input.bool(title="Show New York", defval=true, inline="Show New York Time", group="Sessions")
 
-sydneySessionColour  = color.new(color.black, 0)
+// https://www.tradingview.com/pine-script-docs/en/v5/concepts/Colors.html#constant-colors
+sydneySessionColour  = color.new(color.silver, 0)
 tokyoSessionColour   = color.new(color.green, 0)
-berlinSessionColour  = color.new(color.aqua, 0)
+berlinSessionColour  = color.new(color.teal, 0)
 londonSessionColour  = color.new(color.orange, 0)
 newYorkSessionColour = color.new(color.purple, 0)
 
-// Show Session Info
-// ============================================================================================================
 // timeinrange(res, sess) => not na(time(res, sess, "America/New_York")) ? 1 : 0
 var bool isWeekend = (dayofweek == dayofweek.sunday) or (dayofweek == dayofweek.saturday)
 if barstate.isnew
     isWeekend :=  (dayofweek == dayofweek.sunday) or (dayofweek == dayofweek.saturday)
 
 sessionBegins(sess) =>
-    t = time("", sess)
+    t = time("", sess, scriptTimezoneInput)
     timeframe.isintraday and (not barstate.isfirst) and na(t[1]) and not na(t)
 
-inSessionTimeslot(sess) => not na(time(timeframe.period, sess))
+inSessionTimeslot(sess) => not na(time(timeframe.period, sess, scriptTimezoneInput))
 
+// Show Session Info
+// ============================================================================================================
 // plotshape(series, title style=shape.flag, location, color, offset, text, textcolor, editable, size, show_last, display) → void
 // plot(barstate.islast ? bar : na, color = color.black, linewidth = 2, style = plot.style_histogram, transp = 35)
 
-plotMarketSessionOpen(sess, colorz) =>
-    if not isWeekend and sessionBegins(sess) and inSessionTimeslot(sess)
-        line.new(bar_index, open, bar_index, open * 2.01, extend = extend.none, color = colorz, style = line.style_solid, width = 1)
+// plotMarketSessionOpen(sess, colorz) =>
+//     if not isWeekend and sessionBegins(sess) and inSessionTimeslot(sess)
+//         line.new(bar_index, open, bar_index, open * 2.01, extend = extend.none, color = colorz, style = line.style_solid, width = 1)
 
-barcolor(not isWeekend and sessionBegins(sydneySession) and inSessionTimeslot(sydneySession) ? sydneySessionColour : na)
-barcolor(not isWeekend and sessionBegins(tokyoSession) and inSessionTimeslot(tokyoSession) ? tokyoSessionColour : na)
-barcolor(not isWeekend and sessionBegins(berlinSession) and inSessionTimeslot(berlinSession) ? berlinSessionColour : na)
-barcolor(not isWeekend and sessionBegins(londonSession) and inSessionTimeslot(londonSession) ? londonSessionColour : na)
-barcolor(not isWeekend and sessionBegins(newYorkSession) and inSessionTimeslot(newYorkSession) ? newYorkSessionColour : na)
-
-// Use to Plot variables of type float, int or bool in the indicator’s values and the Data Window
-plotchar(101, "v", "", location.top, size = size.tiny)
+barcolor(showMarketSessionOpenCandles and not isWeekend and sessionBegins(sydneySession) and inSessionTimeslot(sydneySession) ? sydneySessionColour : na)
+barcolor(showMarketSessionOpenCandles and not isWeekend and sessionBegins(tokyoSession) and inSessionTimeslot(tokyoSession) ? tokyoSessionColour : na)
+barcolor(showMarketSessionOpenCandles and not isWeekend and sessionBegins(berlinSession) and inSessionTimeslot(berlinSession) ? berlinSessionColour : na)
+barcolor(showMarketSessionOpenCandles and not isWeekend and sessionBegins(londonSession) and inSessionTimeslot(londonSession) ? londonSessionColour : na)
+barcolor(showMarketSessionOpenCandles and not isWeekend and sessionBegins(newYorkSession) and inSessionTimeslot(newYorkSession) ? newYorkSessionColour : na)
 
 printSessionInfo() =>
     var nameOfCurrentDay = "What day is it?"
@@ -127,13 +131,13 @@ printSessionInfo() =>
         5 => nameOfCurrentDay := "Thursday"
         6 => nameOfCurrentDay := "Friday"
         7 => nameOfCurrentDay := "Saturday"
-     
-    var table topRightTableInfo = table.new(position.top_right, columns = 3, rows = 6, frame_color = color.orange, border_width = 1, border_color = color.black)
 
-    if (barstate.islast)
-        table.cell(table_id = topRightTableInfo, row = 0, column = 0, text = "Session Info")
-        table.cell(table_id = topRightTableInfo, row = 0, column = 1, text = nameOfCurrentDay)
-        table.cell(table_id = topRightTableInfo, row = 0, column = 2, text = "")
+    if (barstate.islast and showMarketSessionInfoTable)
+        table topRightTableInfo = table.new(position.top_right, columns = 3, rows = 6, frame_color = color.orange, border_width = 1, border_color = color.black)
+
+        table.cell(table_id = topRightTableInfo, row = 0, column = 0, text = "Session Times", bgcolor = color.lime)
+        table.cell(table_id = topRightTableInfo, row = 0, column = 1, text = nameOfCurrentDay, bgcolor = color.lime)
+        table.cell(table_id = topRightTableInfo, row = 0, column = 2, text = "", bgcolor = color.lime)
         
         table.cell(table_id = topRightTableInfo, row = 1, column = 0, text = "Sydney", bgcolor = sydneySessionColour)
         table.cell(table_id = topRightTableInfo, row = 1, column = 1, text = sydneySession)
@@ -163,8 +167,13 @@ printLastBarInfo() =>
     label.set_xy(lblLastBarInfo, bar_index, ta.highest(10)[1])
     label.set_text(lblLastBarInfo, lastBarInfo)
 
+
 printSessionInfo()
-printLastBarInfo()
+
+// Use to Plot variables of type float, int or bool in the indicator’s values and the Data Window
+// plotchar(101, "whatisthis", "", location.top, size = size.tiny)
+
+// printLastBarInfo()
 
 // Trend Indicators
 // ============================================================================================================
