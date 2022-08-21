@@ -1,28 +1,28 @@
-//@version=5
+// @version=5
 
 indicator(title = "Market Maker Session Times", overlay = true)
 
 // Inputs
 // ============================================================================================================
-// General time constraint for a strategy
-int startDateTime = input.time(timestamp("1 Feb 2021 00:00"), title="Start Date", group="Strategy Date Range", 
+int startDateTime = 
+     input.time(timestamp("1 Feb 2021 00:00"), title="Start Date", group="Strategy Date Range", 
      tooltip="Specifies the starting date and time from which on the strategy simulates buy and sell trades.")
-int endDateTime = input.time(timestamp("1 Feb 2022 11:59"), title="End Date", group="Strategy Date Range", 
+int endDateTime = 
+     input.time(timestamp("1 Feb 2022 11:59"), title="End Date", group="Strategy Date Range", 
      tooltip="Specifies the ending date and time from which on the strategy simulates buy and sell trades.")
-bool showMarketSessionInfoTable = false
-bool showMarketSessionOpenCandles = true
 
-string sessionInput = input.session("0900-1730", title="Session Times", 
-     group="Trading Session", tooltip="Use the checkboxes to select " + 
-     "on which days of the week this session is active. The session " +
-     "has to be active on at least one day.")
-bool monSession = input.bool(true, title="Mon ", group="Trading Session", inline="d1")
-bool tueSession = input.bool(true, title="Tue ", group="Trading Session", inline="d1")
-bool wedSession = input.bool(true, title="Wed ", group="Trading Session", inline="d1")
-bool thuSession = input.bool(true, title="Thu ", group="Trading Session", inline="d1")
-bool friSession = input.bool(true, title="Fri   ", group="Trading Session", inline="d2")
-bool satSession = input.bool(false, title="Sat  ", group="Trading Session", inline="d2")
-bool sunSession = input.bool(false, title="Sun ", group="Trading Session", inline="d2")
+bool sunSession = input.bool(true, title="Sun", group="Trading Session", inline="d1")
+bool monSession = input.bool(true, title="Mon ", group="Trading Session", inline="d2")
+bool tueSession = input.bool(true, title="Tue ", group="Trading Session", inline="d3")
+bool wedSession = input.bool(true, title="Wed ", group="Trading Session", inline="d4")
+bool thuSession = input.bool(true, title="Thu ", group="Trading Session", inline="d5")
+bool friSession = input.bool(true, title="Fri   ", group="Trading Session", inline="d6")
+bool satSession = input.bool(false, title="Sat  ", group="Trading Session", inline="d7")
+
+bool showMarketSessionInfoTable = 
+     input.bool(true, title="Show Session Times", group="Trading Session", inline="xxx")
+bool showMarketSessionOpenCandles = 
+     input.bool(true, title="Highlight Session Opens", group="Trading Session", inline="xxx")
 
 // Calculate Session Info
 // ============================================================================================================
@@ -95,32 +95,50 @@ berlinSessionColour  = color.new(color.teal, 0)
 londonSessionColour  = color.new(color.orange, 0)
 newYorkSessionColour = color.new(color.purple, 0)
 
-// timeinrange(res, sess) => not na(time(res, sess, "America/New_York")) ? 1 : 0
-var bool isWeekend = (dayofweek == dayofweek.sunday) or (dayofweek == dayofweek.saturday)
+// Basic weekend check, should evolve later
+var bool brokerIsClosed = 
+     (dayofweek == dayofweek.sunday) or (dayofweek == dayofweek.saturday)
 if barstate.isnew
-    isWeekend :=  (dayofweek == dayofweek.sunday) or (dayofweek == dayofweek.saturday)
+    brokerIsClosed :=  (dayofweek == dayofweek.sunday) or (dayofweek == dayofweek.saturday)
 
 sessionBegins(sess) =>
     t = time("", sess, scriptTimezoneInput)
     timeframe.isintraday and (not barstate.isfirst) and na(t[1]) and not na(t)
 
-inSessionTimeslot(sess) => not na(time(timeframe.period, sess, scriptTimezoneInput))
+inSessionTimeslot(sess) => 
+    not na(time(timeframe.period, sess, scriptTimezoneInput))
 
 // Show Session Info
 // ============================================================================================================
-// plotshape(series, title style=shape.flag, location, color, offset, text, textcolor, editable, size, show_last, display) → void
-// plot(barstate.islast ? bar : na, color = color.black, linewidth = 2, style = plot.style_histogram, transp = 35)
+sessionIsActive(sess) => 
+    // showMarketSessionOpenCandles and not brokerIsClosed and sessionBegins(sess) and inSessionTimeslot(sess)
+    showMarketSessionOpenCandles and sessionBegins(sess) and inSessionTimeslot(sess)
 
-// plotMarketSessionOpen(sess, colorz) =>
-//     if not isWeekend and sessionBegins(sess) and inSessionTimeslot(sess)
+// plotshape(series, title style=shape.flag, location, color, offset, text, textcolor, editable, size, show_last, display) → void
+
+//     if barstate.isnew and sessionIsActive(sess)
 //         line.new(bar_index, open, bar_index, open * 2.01, extend = extend.none, color = colorz, style = line.style_solid, width = 1)
 
-barcolor(showMarketSessionOpenCandles and not isWeekend and sessionBegins(sydneySession) and inSessionTimeslot(sydneySession) ? sydneySessionColour : na)
-barcolor(showMarketSessionOpenCandles and not isWeekend and sessionBegins(tokyoSession) and inSessionTimeslot(tokyoSession) ? tokyoSessionColour : na)
-barcolor(showMarketSessionOpenCandles and not isWeekend and sessionBegins(berlinSession) and inSessionTimeslot(berlinSession) ? berlinSessionColour : na)
-barcolor(showMarketSessionOpenCandles and not isWeekend and sessionBegins(londonSession) and inSessionTimeslot(londonSession) ? londonSessionColour : na)
-barcolor(showMarketSessionOpenCandles and not isWeekend and sessionBegins(newYorkSession) and inSessionTimeslot(newYorkSession) ? newYorkSessionColour : na)
 
+// Highlight Session Open Candles
+
+barcolor(barstate.isnew and sessionIsActive(sydneySession) ? sydneySessionColour : na)
+plotshape(barstate.isnew and sessionIsActive(sydneySession), "Sydney", style=shape.triangleup, location=location.bottom, color=sydneySessionColour, size=size.tiny, text="🇦🇺", display = display.all - display.status_line)
+
+barcolor(barstate.isnew and sessionIsActive(tokyoSession) ? tokyoSessionColour : na)
+plotshape(barstate.isnew and sessionIsActive(tokyoSession), "Tokyo", style=shape.triangleup, location=location.bottom, color = tokyoSessionColour, size = size.tiny, text="🇨🇳", display = display.all - display.status_line)
+
+barcolor(barstate.isnew and sessionIsActive(berlinSession) ? berlinSessionColour : na)
+plotshape(barstate.isnew and sessionIsActive(berlinSession), "Berlin", style=shape.triangleup, location=location.bottom, color = berlinSessionColour, size = size.tiny, text="🇩🇪", display = display.all - display.status_line)
+
+barcolor(barstate.isnew and sessionIsActive(londonSession) ? londonSessionColour : na)
+plotshape(barstate.isnew and sessionIsActive(londonSession), "London", style=shape.triangleup, location=location.bottom, color = londonSessionColour, size = size.tiny, text="🇬🇧", display = display.all - display.status_line)
+
+barcolor(barstate.isnew and sessionIsActive(newYorkSession) ? newYorkSessionColour : na)
+plotshape(barstate.isnew and sessionIsActive(newYorkSession), "New York", style=shape.triangleup, location=location.bottom, color = newYorkSessionColour, size = size.tiny, text="🇺🇸", display = display.all - display.status_line)
+
+
+// Print table with Session info
 printSessionInfo() =>
     var nameOfCurrentDay = "What day is it?"
     switch dayofweek(timenow)
@@ -132,48 +150,40 @@ printSessionInfo() =>
         6 => nameOfCurrentDay := "Friday"
         7 => nameOfCurrentDay := "Saturday"
 
-    if (barstate.islast and showMarketSessionInfoTable)
+    if (barstate.isnew and showMarketSessionInfoTable)
         table topRightTableInfo = table.new(position.top_right, columns = 3, rows = 6, frame_color = color.orange, border_width = 1, border_color = color.black)
 
         table.cell(table_id = topRightTableInfo, row = 0, column = 0, text = "Session Times", bgcolor = color.lime)
         table.cell(table_id = topRightTableInfo, row = 0, column = 1, text = nameOfCurrentDay, bgcolor = color.lime)
         table.cell(table_id = topRightTableInfo, row = 0, column = 2, text = "", bgcolor = color.lime)
         
-        table.cell(table_id = topRightTableInfo, row = 1, column = 0, text = "Sydney", bgcolor = sydneySessionColour)
+        table.cell(table_id = topRightTableInfo, row = 1, column = 0, text = "🇦🇺 Sydney", bgcolor = sydneySessionColour)
         table.cell(table_id = topRightTableInfo, row = 1, column = 1, text = sydneySession)
         table.cell(table_id = topRightTableInfo, row = 1, column = 2, text = (inSessionTimeslot(sydneySession) ? "Open" : "Closed"), bgcolor = (inSessionTimeslot(sydneySession) ? color.green : color.red))
 
-        table.cell(table_id = topRightTableInfo, row = 2, column = 0, text = "Tokyo", bgcolor = tokyoSessionColour)
+        table.cell(table_id = topRightTableInfo, row = 2, column = 0, text = "🇨🇳 Tokyo", bgcolor = tokyoSessionColour)
         table.cell(table_id = topRightTableInfo, row = 2, column = 1, text = tokyoSession)
         table.cell(table_id = topRightTableInfo, row = 2, column = 2, text = (inSessionTimeslot(tokyoSession) ? "Open" : "Closed"), bgcolor = (inSessionTimeslot(tokyoSession) ? color.green : color.red))
 
-        table.cell(table_id = topRightTableInfo, row = 3, column = 0, text = "Berlin", bgcolor = berlinSessionColour)
+        table.cell(table_id = topRightTableInfo, row = 3, column = 0, text = "🇩🇪 Berlin", bgcolor = berlinSessionColour)
         table.cell(table_id = topRightTableInfo, row = 3, column = 1, text = berlinSession)
         table.cell(table_id = topRightTableInfo, row = 3, column = 2, text = (inSessionTimeslot(berlinSession) ? "Open" : "Closed"), bgcolor = (inSessionTimeslot(berlinSession) ? color.green : color.red))
 
-        table.cell(table_id = topRightTableInfo, row = 4, column = 0, text = "London", bgcolor = londonSessionColour)
+        table.cell(table_id = topRightTableInfo, row = 4, column = 0, text = "🇬🇧 London", bgcolor = londonSessionColour)
         table.cell(table_id = topRightTableInfo, row = 4, column = 1, text = londonSession)
         table.cell(table_id = topRightTableInfo, row = 4, column = 2, text = (inSessionTimeslot(londonSession) ? "Open" : "Closed"), bgcolor = (inSessionTimeslot(londonSession) ? color.green : color.red))
 
-        table.cell(table_id = topRightTableInfo, row = 5, column = 0, text = "New York", bgcolor = newYorkSessionColour)
+        table.cell(table_id = topRightTableInfo, row = 5, column = 0, text = "🇺🇸 New York", bgcolor = newYorkSessionColour)
         table.cell(table_id = topRightTableInfo, row = 5, column = 1, text = newYorkSession)
         table.cell(table_id = topRightTableInfo, row = 5, column = 2, text = (inSessionTimeslot(newYorkSession) ? "Open" : "Closed"), bgcolor = (inSessionTimeslot(newYorkSession) ? color.green : color.red))
 
-printLastBarInfo() =>
-    var lastBarInfo = str.tostring(high)
-    // Create label on the first bar.
-    var lblLastBarInfo = label.new(bar_index, na, lastBarInfo, xloc.bar_index, yloc.price, color(na), label.style_none, color.gray, size.large, text.align_left, "A tip for you")
-    // On next bars, update the label's x and y position, and the text it displays.
-    label.set_xy(lblLastBarInfo, bar_index, ta.highest(10)[1])
-    label.set_text(lblLastBarInfo, lastBarInfo)
-
-
 printSessionInfo()
 
-// Use to Plot variables of type float, int or bool in the indicator’s values and the Data Window
-// plotchar(101, "whatisthis", "", location.top, size = size.tiny)
 
-// printLastBarInfo()
+// ============================================================================================================
+// Refactor into libraries
+// https://www.tradingview.com/pine-script-docs/en/v5/concepts/Libraries.html
+// ============================================================================================================
 
 // Trend Indicators
 // ============================================================================================================
@@ -182,3 +192,55 @@ bool upTrend = ta.rising(close, trendBarCount) and ta.rising(high, trendBarCount
 plotchar(upTrend, "Up trend", "▲", location.belowbar, color = na(volume) ? color.gray : color.blue, size = size.tiny)
 bool downTrend = ta.falling(close, trendBarCount) and ta.falling(high, trendBarCount) and (na(volume) or ta.falling(volume, trendBarCount))
 plotchar(downTrend, "Down trend", "▼", location.belowbar, color = na(volume) ? color.gray : color.red, size = size.tiny)
+
+// Price Flow Indicator
+// ============================================================================================================
+// Large Order Blocks
+// float codiff = close - open
+// plotarrow(codiff, colorup=color.new(color.teal,40), colordown=color.new(color.orange, 40), display=display.all-display.status_line)
+
+// Price Gaps
+float currentCandleSize = high - low
+float previousCandleSize = high[1] - low[1] // Historical data is referenced using the square brackets.  
+float candleSizeRatio = currentCandleSize / previousCandleSize
+// box.new(time, open, time + 60 * 60 * 24, close, xloc=xloc.bar_time, border_style=line.style_dashed)
+
+// Order Block Retest
+
+// Trade Position Management
+// ============================================================================================================
+// Account Margin check
+
+// Open a Buy Order
+
+// Open a Sell Order
+
+// Profit Conditions
+
+// Close an Order
+
+// Order statistics
+
+// Here be Dragons
+// ============================================================================================================
+// Use to Plot variables of type float, int or bool in the indicator’s values and the Data Window
+// plotchar(1.01, "", "", location.top, size = size.tiny)
+
+// printLastBarInfo() =>
+//     var lastBarInfo = str.tostring(high)
+//     // Create label on the first bar.
+//     var lblLastBarInfo = label.new(bar_index, na, lastBarInfo, xloc.bar_index, yloc.price, color(na), label.style_none, color.gray, size.large, text.align_left, "A tip for you")
+//     // On next bars, update the label's x and y position, and the text it displays.
+//     label.set_xy(lblLastBarInfo, bar_index, ta.highest(10)[1])
+//     label.set_text(lblLastBarInfo, lastBarInfo)
+// printLastBarInfo()
+
+// box.new(time, open, time + 60 * 60 * 24, close, xloc=xloc.bar_time, border_style=line.style_dashed)
+// a_allBoxes = box.all
+// if array.size(a_allBoxes) > 0
+// 	for i = 0 to array.size(a_allBoxes) - 1
+// 		box.delete(array.get(a_allBoxes, i))
+
+// float btcusd=request.security("BTCUSD",timeframe.period,close)
+
+// currentATR = ta.atr(14)
