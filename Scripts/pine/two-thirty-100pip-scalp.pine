@@ -1,9 +1,18 @@
 //@version=5
 strategy("Time-Based Entry with Low Volume", overlay=true, initial_capital=1000, pyramiding=1, default_qty_type=strategy.fixed, default_qty_value=10, calc_on_every_tick=true, process_orders_on_close=true)
 
-// User Inputs
-allowLongTrades = input.bool(true, title="Longs", group="Trades enabled")
-allowShortTrades = input.bool(true, title="Shorts", group="Trades enabled")
+// Strategy talk-through
+// ============================================================================================================
+// Nas100 3.30pm SAST Market Open Volatility Prediction
+
+// 1. Open Nas chart on 30M timeframe
+// 2. Add basic Volume indicator to chart
+// 3. Monitor the 14.30 candle closure
+// 4. Check the volume on that 14:30 candle
+// 5. If 14:30 candles volume is >=20k, we take that as a sign of strength for candle trend continuation. i.e. if the candle is bearish then we'll take a Sell 14:31pm for the 15:30 opening and vice versa for bullish. 
+// 6. Saying this another way; If 14:30 candles volume is <20k, we take the opposite of the candles trend. i.e. if there's no volume to support the candle trend, then we take the opposite position at 14:31pm for the 15:30 opening.
+
+// Position size should be taken based on 50-80% probability of a 20usd move in your direction. And given our early entry, we need a 40usd stop loss. Strategy needs to be back tested for a late entry to reduce/eliminate that potential drawdown. 
 
 // Define session times
 // ============================================================================================================
@@ -45,10 +54,15 @@ is_trade_time = (time >= time_sast and time <= time_end) and inSessionTimeslot(o
 // Trades - Risk Management
 // ============================================================================================================
 var lotSize = input.float(40, title="Trade size (lots)", group="Trade Management")
-var profitTicks = input.float(4000, title="Take profit (ticks)", group="Trade Management") // 400 pips, $40
+var profitTicks = input.float(2000, title="Take profit (ticks)", group="Trade Management") // 200 pips, $20
 var lossTicks = input.float(4000, title="Stop loss (ticks)", group="Trade Management") // 400 pips, $40
-var minProfitValue = input.float(4000, title="Min profit value (currency)", group="Trade Management") // 400 pips, $40
-var maxLossValue = input.float(4000, title="Max loss value (currency)", group="Trade Management") // 400 pips, $40
+// var minProfitValue = input.float(4000, title="Min profit value (currency)", group="Trade Management") // 400 pips, $40
+// var maxLossValue = input.float(4000, title="Max loss value (currency)", group="Trade Management") // 400 pips, $40
+
+// Trades - Position selection
+// ============================================================================================================
+var allowLongTrades = input.bool(true, title="Longs", group="Trades enabled")
+var allowShortTrades = input.bool(true, title="Shorts", group="Trades enabled")
 
 // Signals
 // ============================================================================================================
