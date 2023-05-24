@@ -1,0 +1,34 @@
+// @version=5
+
+indicator(title = "PreMarket Scalper", overlay = true)
+
+string scriptTimezoneInput = "Africa/Johannesburg"
+
+sessionBegins(sess) =>
+    t = time("", sess, scriptTimezoneInput)
+    timeframe.isintraday and (not barstate.isfirst) and na(t[1]) and not na(t)
+
+inSessionTimeslot(sess) => 
+    not na(time(timeframe.period, sess, scriptTimezoneInput))
+
+sessionIsActive(sess) => 
+    sessionBegins(sess) and inSessionTimeslot(sess)
+
+isNYOpenPreMarketSessionTime() =>
+    string newYorkPreMarketSession = "1500-1530:23456"
+    barstate.isnew and sessionIsActive(newYorkPreMarketSession)
+
+// Highlight Key Sessions Open Times
+barcolor(isNYOpenPreMarketSessionTime() ? color.silver : na)
+
+// nas100OpenPrice = request.security("NAS100", "30", open, barmerge.gaps_on, barmerge.lookahead_off)
+// nas100ClosePrice = request.security("NAS100", "30", close, barmerge.gaps_on, barmerge.lookahead_off)
+
+premarketIsBullish() =>
+    qmiOpenPrice = request.security("QMI", "30", open[1], barmerge.gaps_on, barmerge.lookahead_off)
+    qmiClosePrice = request.security("QMI", "30", close, barmerge.gaps_on, barmerge.lookahead_off)
+    barstate.isconfirmed and isNYOpenPreMarketSessionTime() and qmiClosePrice > qmiOpenPrice
+
+plotshape(premarketIsBullish(), "QMI is Bullish", style=shape.triangleup, location=location.bottom, color=color.green, size=size.tiny, text="", display = display.all - display.status_line)
+
+// label.new(bar_index, high, "This bar's wicks are 15 ticks big")

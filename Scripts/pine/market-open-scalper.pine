@@ -1,0 +1,104 @@
+// @version=5
+
+// https://www.tradingview.com/pine-script-reference/v5/#fun_strategy
+// https://www.tradingcode.net/tradingview-pine-script-course/
+// Warning: https://www.tradingview.com/pine-script-docs/en/v5/concepts/Strategies.html#broker-emulator
+// TODO: Code up for more learning https://www.investopedia.com/articles/forex/08/five-minute-momo.asp
+// TODO: https://www.tradingview.com/pine-script-docs/en/v5/concepts/Strategies.html#margin
+strategy("Market Scalper", initial_capital=600, overlay=true, pyramiding=2, default_qty_type=strategy.fixed, default_qty_value=1, calc_on_every_tick=true)
+
+// Backtest Date Range
+// ============================================================================================
+backtestStart = timestamp(2021, 04, 01, 00, 00)
+backtestFinish = timestamp(2022, 12, 31, 23, 59)
+isTradingDay()  => time >= backtestStart and time <= backtestFinish ? true : false
+
+// Session Time Info
+// ============================================================================================
+string scriptTimezoneInput = "Africa/Johannesburg"
+
+sessionBegins(sess) =>
+    t = time("", sess, scriptTimezoneInput)
+    timeframe.isintraday and (not barstate.isfirst) and na(t[1]) and not na(t)
+
+inSessionTimeslot(sess) => 
+    not na(time(timeframe.period, sess, scriptTimezoneInput))
+
+sessionIsActive(sess) => 
+    isTradingDay() and sessionBegins(sess) and inSessionTimeslot(sess)
+
+isTradeWindowOpen() =>
+    string zaSession = "0600-2230:23456"
+    // string newYorkPreMarketSession = "1500-1530:23456"
+    barstate.isnew and sessionIsActive(zaSession)
+
+// Indicators
+// ============================================================================================
+
+// Nasdaq Pre Market Data
+// ========================================
+qmiOpenPrice = request.security("QMI", "60", open[1], barmerge.gaps_on, barmerge.lookahead_off)
+qmiClosePrice = request.security("QMI", "60", close, barmerge.gaps_on, barmerge.lookahead_off)
+
+// EMAs
+// ========================================
+crossOverEMALength = 150
+crossOverEMAPrices = ta.ema(close, crossOverEMALength)
+emaCrossOver = ta.crossover(close, crossOverEMAPrices)
+emaCrossUnder = ta.crossunder(close, crossOverEMAPrices)
+
+fastMALength = 12
+slowMALength = 26
+emaFastCrossOverSlow = ta.crossover (ta.ema(hlc3, fastMALength), ta.ema(hlc3, slowMALength))  
+emaFastCrossUnderSlow = ta.crossunder(ta.ema(hlc3, fastMALength), ta.ema(hlc3, slowMALength))
+
+// Risk Management
+// ============================================================================================
+lotSize = 2
+tp1Value = 600 * symbol.pointvalue
+slValue = 300 * symbol.pointvalue
+autocloseTrades = true
+
+// Strategy
+// ============================================================================================
+timeInTradeLimit = 120
+useTradeTimeLimit = autocloseTrades and false
+useMaxProfitLimit = autocloseTrades and true
+qmiIsBullish = qmiClosePrice > qmiOpenPrice
+
+// Entry Strategy
+// ========================================
+if barstate.isconfirmed and isTradeWindowOpen()
+    if qmiIsBullish and emaCrossOver
+        strategy.entry("buy@" + str.tostring(close), strategy.long, lotSize)
+    else 
+        strategy.entry("sell@" + str.tostring(close), strategy.short, lotSize)
+
+// Exit Strategy
+// ========================================
+strategy.exit("Close Buys@" + str.tostring(close), "buy", profit = tp1Value, slValue = 30, slValue = 30)
+strategy.exit("Close Sells@" + str.tostring(close), "sell", profit = tp1Value, slValue = 30, slValue = 30)
+
+var optenTradesPL = 0.0
+
+if barstate.isnew
+    minutesSinceEntry = (time - strategy.opentrades.entry_time(0)) / (60 * 1000)
+    maxTradeLengthReached = minutesSinceEntry >= timeInTradeLimit
+
+    for idx = 0 to strategy.opentrades - 1
+        optenTradesPL += strategy.opentrades.profit(idx)
+
+        if maxTradeLengthReached and useTradeTimeLimit
+            strategy.close_all(comment = "close@" + str.tostring(close) + " - " + str.tostring(timeInTradeLimit) + "min") // , qty_percent=100)
+            // strategy.close("buy", comment = "close - 30min", qty_percent=100)
+            // strategy.close("sell", comment = "close - 30min", qty_percent=100)
+            
+        if strategy.opentrades.profit(idx) >= tp1Amount and useMaxProfitLimit
+            strategy.close_all(comment = "close@" + str.tostring(close) + " - +" + str.tostring(tp1Amount) + "USD") //, qty_percent=100)
+            // strategy.close("buy", comment = "close - +20USD", qty_percent=100)
+            // strategy.close("sell", comment = "close - +20USD", qty_percent=100)
+
+        //  if strategy.opentrades.profit(strategy.opentrades - 1) <= 30
+            // strategy.close_all(comment = "close - -30USD")
+
+// plot(strategy.initial_capital + strategy.netprofit + strategy.openprofit)

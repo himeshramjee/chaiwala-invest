@@ -1,0 +1,85 @@
+//@version=5
+strategy("Stoch RSI Crossover Strategy", initial_capital=600, overlay=false, pyramiding=1, default_qty_type=strategy.fixed, default_qty_value=0.5, calc_on_every_tick=true, process_orders_on_close=true)
+
+// Trading Days
+// ============================================================================================
+string scriptTimezoneInput = "Africa/Johannesburg"
+useTradingDateFilter = input.bool(true, title="Filter Date Range for Trading (" + scriptTimezoneInput + ")", group="Trading Days Period")
+tradingDayStartDate = input.time(timestamp("1 Jan 2022 22:00"),  title="Start Date", group="Trading Days Period")
+tradingDayEndDate = input.time(timestamp("30 Apr 2023 20:30"), title="End Date", group="Trading Days Period")
+inTradingDaysWindow = not useTradingDateFilter or (time >= tradingDayStartDate and time <= tradingDayEndDate)
+
+// Session Times
+// ============================================================================================
+string newYorkPreMarketSession = "1500-1530:23456"
+string zaSession = "0600-2230:23456"
+
+sessionBegins(sess) =>
+    t = time("", sess, scriptTimezoneInput)
+    timeframe.isintraday and (not barstate.isfirst) and na(t[1]) and not na(t)
+
+inSessionTimeslot(sess) => 
+    not na(time(timeframe.period, sess, scriptTimezoneInput))
+
+sessionIsActive(sess) => 
+    inTradingDaysWindow and inSessionTimeslot(sess)
+    // inTradingDaysWindow and sessionBegins(sess) and inSessionTimeslot(sess)
+
+isTradeSessionOpen = barstate.isnew and sessionIsActive(zaSession)
+
+// Indicators
+// ============================================================================================
+// indicator("Stoch RSI Crossover Strategy", overlay=true)
+
+// Stoch RSI Indicator
+stoch_rsi_k = input.int(3, "K", minval=1)
+stoch_rsi_d = input.int(3, "D", minval=1)
+rsi_length = input.int(7, "RSI Length", minval=1)
+stoch_length = input.int(14, "Stochastic Length", minval=1)
+
+rsi1 = ta.rsi(close, rsi_length)
+maxrsi1 = ta.highest(rsi1, stoch_length)
+minrsi1 = ta.lowest(rsi1, stoch_length)
+stoch_rsi = 100 * (rsi1 - minrsi1) / (maxrsi1 - minrsi1)
+
+k = ta.sma(stoch_rsi, stoch_rsi_k)
+d = ta.sma(k, stoch_rsi_d)
+
+plot(k, "Stoch RSI K", color.blue)
+plot(d, "Stoch RSI D", color.red)
+
+// Add dashed lines at 20% and 80% levels
+hline1 = hline(20, title="Oversold Level", linestyle=hline.style_dashed, color=color.gray)
+hline2 = hline(80, title="Overbought Level", linestyle=hline.style_dashed, color=color.gray)
+
+// Add light blue background between the two levels
+fill(hline1, hline2, color=color.new(color.blue, 95))
+
+// Strategies
+// ============================================================================================
+
+// Stock RSI Crossover
+lotSize = 0.5
+tp1Points = 100
+slPoints = 30
+buySignal = ta.crossover(k, d) and k <= 20 and d <= 20
+sellSignal = ta.crossover(d, k) and k >= 80 and d >= 80
+
+// if (barstate.isconfirmed and isTradeSessionOpen)
+// if (buySignal == true)
+//     strategy.entry("buy@" + str.tostring(close), strategy.long, alert_message="buying@ " + str.tostring(close))
+
+if ta.crossover(close, ta.ema(close, 20))
+	strategy.entry("Enter Long", strategy.long)
+
+if (sellSignal)
+    strategy.entry("sell@" + str.tostring(close), strategy.short, alert_message="selling@ " + str.tostring(close))
+
+plotshape(series=buySignal, style=shape.triangleup, location=location.bottom, color=color.blue, size=size.tiny)
+plotshape(series=sellSignal, style=shape.triangledown, location=location.top, color=color.red, size=size.tiny)
+
+strategy.exit("Close @" + str.tostring(close), profit=tp1Points, loss=slPoints)
+
+if (not inTradingDaysWindow and inTradingDaysWindow[1])
+    strategy.cancel_all()
+    strategy.close_all(comment="Trading Date Range Exit")

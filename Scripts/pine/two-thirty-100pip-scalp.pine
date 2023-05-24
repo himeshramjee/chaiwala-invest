@@ -1,0 +1,101 @@
+//@version=5
+strategy("Time-Based Entry with Low Volume", overlay=true, initial_capital=1000, pyramiding=1, default_qty_type=strategy.fixed, default_qty_value=10, calc_on_every_tick=true, process_orders_on_close=true)
+
+// User Inputs
+allowLongTrades = input.bool(true, title="Longs", group="Trades enabled")
+allowShortTrades = input.bool(true, title="Shorts", group="Trades enabled")
+
+// Define session times
+// ============================================================================================================
+var scriptTimezoneInput = "Africa/Johannesburg"
+var time_sast = input.time(timestamp("01 May 2023 00:00"),  title="Start Date", group="Trading Days Period")
+var time_end = input.time(timestamp("31 May 2023 00:00"), title="End Date", group="Trading Days Period")
+// var time_sast = timestamp(scriptTimezoneInput, 2023, 05, 15, 00, 00, 0)
+// var time_end = timestamp(scriptTimezoneInput, 2023, 05, 18, 00, 00, 0)
+var orderExecutionTime = "1430-1431:23456"
+
+inSessionTimeslot(sess) => 
+    not na(time(timeframe.period, sess, scriptTimezoneInput))
+
+// Check if it's time for the trade
+is_trade_time = (time >= time_sast and time <= time_end) and inSessionTimeslot(orderExecutionTime)
+
+// Info table
+// ============================================================================================================
+// Define table values
+// symbolRow = syminfo.tickerid
+// formattedTime = str.format_time(time, "yyyy-MM-dd HH:mm:ss", scriptTimezoneInput) //syminfo.timezone)
+// tickValueRow = str.tostring(syminfo.mintick)
+// pointValueRow = str.tostring(syminfo.pointvalue)
+
+// table topRightTableInfo = table.new(position.top_right, columns = 4, rows = 4, frame_color = color.orange, border_width = 1, border_color = color.black)
+
+// // Table - Header
+// table.cell(table_id = topRightTableInfo, row = 0, column = 0, text = "Symbol")
+// table.cell(table_id = topRightTableInfo, row = 0, column = 1, text = "Time 🌍 ")
+// table.cell(table_id = topRightTableInfo, row = 0, column = 2, text = "Tick Value")
+// table.cell(table_id = topRightTableInfo, row = 0, column = 3, text = "Point Value")
+
+// // Table - Row 1
+// table.cell(table_id = topRightTableInfo, row = 1, column = 0, text = symbolRow)
+// table.cell(table_id = topRightTableInfo, row = 1, column = 1, text = formattedTime)
+// table.cell(table_id = topRightTableInfo, row = 1, column = 2, text = tickValueRow)
+// table.cell(table_id = topRightTableInfo, row = 1, column = 3, text = pointValueRow)
+
+// Trades - Risk Management
+// ============================================================================================================
+var lotSize = input.float(40, title="Trade size (lots)", group="Trade Management")
+var profitTicks = input.float(4000, title="Take profit (ticks)", group="Trade Management") // 400 pips, $40
+var lossTicks = input.float(4000, title="Stop loss (ticks)", group="Trade Management") // 400 pips, $40
+var minProfitValue = input.float(4000, title="Min profit value (currency)", group="Trade Management") // 400 pips, $40
+var maxLossValue = input.float(4000, title="Max loss value (currency)", group="Trade Management") // 400 pips, $40
+
+// Signals
+// ============================================================================================================
+buySignal = false
+sellSignal = false
+if barstate.isconfirmed
+    // Define entry conditions
+    bullish_condition = close > open
+    bearish_condition = close < open
+    low_volume_condition = volume <= 20000
+
+    buySignal := is_trade_time and bearish_condition and low_volume_condition
+    sellSignal := is_trade_time and bullish_condition and low_volume_condition
+
+    buySignalComment = str.format("Go Long: {0} > {1}", str.tostring(close), str.tostring(open))
+    sellSignalComment = str.format("Go Short: {0} < {1}", str.tostring(close), str.tostring(open))
+    
+plotshape(series=buySignal, style=shape.triangleup, location=location.bottom, color=color.blue, size=size.tiny)
+plotshape(series=sellSignal, style=shape.triangledown, location=location.top, color=color.red, size=size.tiny)
+
+// Trades - Entries
+// ============================================================================================================
+if barstate.isconfirmed
+    longTradeID = str.format("Buy@{0}", str.tostring(close))
+    shortTradeID = str.format("Sell@{0}", str.tostring(close))
+
+    // Buy order at 2:31 PM SAST if the previous candle was bearish, volume is low, and within May 2023
+    if buySignal and allowLongTrades
+        strategy.entry(longTradeID, strategy.long, lotSize)
+
+    // Sell order at 2:31 PM SAST if the previous candle was bullish, volume is low, and within May 2023
+    if sellSignal and allowShortTrades
+        strategy.entry(shortTradeID, strategy.short, lotSize)
+
+    // Exit positions based on stop-loss and take-profit levels
+    strategy.exit("Exit", longTradeID, loss=lossTicks, profit=profitTicks)
+    strategy.exit("Exit", shortTradeID, loss=lossTicks, profit=profitTicks)
+
+
+// Trades - Exits
+// ============================================================================================================
+// if barstate.isrealtime
+//     for tradeNumber = 0 to strategy.opentrades - 1
+//         unrealizedProfit = strategy.opentrades.profit(tradeNumber) // -ve for loss
+//         if unrealizedProfit >= minProfitValue
+//             closeComment = str.format("Profit Taken ({0, number, currency} >= {1, number, currency})", str.tostring(unrealizedProfit), minProfitValue)
+//             strategy.close(strategy.opentrades.entry_id(tradeNumber), comment=closeComment)
+//         if unrealizedProfit <= (maxLossValue * -1)
+//             closeComment = str.format("Loss Taken ({0, number, currency} <= {1, number, currency})", str.tostring(unrealizedProfit), (maxLossValue * -1))
+//             strategy.close(strategy.opentrades.entry_id(tradeNumber), comment=closeComment)

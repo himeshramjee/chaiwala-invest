@@ -3,21 +3,22 @@
 indicator(title = "Market Maker Session Times", overlay = true)
 
 // Inputs
+// TODO: Clean out inputs and find way to hide from indicator status line (top left in indicator list on chart)
 // ============================================================================================================
-int startDateTime = 
-     input.time(timestamp("1 Feb 2021 00:00"), title="Start Date", group="Strategy Date Range", 
-     tooltip="Specifies the starting date and time from which on the strategy simulates buy and sell trades.")
-int endDateTime = 
-     input.time(timestamp("1 Feb 2022 11:59"), title="End Date", group="Strategy Date Range", 
-     tooltip="Specifies the ending date and time from which on the strategy simulates buy and sell trades.")
+// int startDateTime = 
+//      input.time(timestamp("1 Feb 2021 00:00"), title="Start Date", group="Strategy Date Range", 
+//      tooltip="Specifies the starting date and time from which on the strategy simulates buy and sell trades.")
+// int endDateTime = 
+//      input.time(timestamp("1 Feb 2022 11:59"), title="End Date", group="Strategy Date Range", 
+//      tooltip="Specifies the ending date and time from which on the strategy simulates buy and sell trades.")
 
-bool sunSession = input.bool(true, title="Sun", group="Trading Session", inline="d1")
-bool monSession = input.bool(true, title="Mon ", group="Trading Session", inline="d2")
-bool tueSession = input.bool(true, title="Tue ", group="Trading Session", inline="d3")
-bool wedSession = input.bool(true, title="Wed ", group="Trading Session", inline="d4")
-bool thuSession = input.bool(true, title="Thu ", group="Trading Session", inline="d5")
-bool friSession = input.bool(true, title="Fri   ", group="Trading Session", inline="d6")
-bool satSession = input.bool(false, title="Sat  ", group="Trading Session", inline="d7")
+// bool sunSession = input.bool(true, title="Sun", group="Trading Session", inline="weekend")
+// bool monSession = input.bool(true, title="Mon ", group="Trading Session", inline="weekday")
+// bool tueSession = input.bool(true, title="Tue ", group="Trading Session", inline="weekday")
+// bool wedSession = input.bool(true, title="Wed ", group="Trading Session", inline="weekday")
+// bool thuSession = input.bool(true, title="Thu ", group="Trading Session", inline="weekday")
+// bool friSession = input.bool(true, title="Fri   ", group="Trading Session", inline="weekday")
+// bool satSession = input.bool(false, title="Sat  ", group="Trading Session", inline="weekend")
 
 bool showMarketSessionInfoTable = 
      input.bool(true, title="Show Session Times", group="Trading Session", inline="xxx")
@@ -26,25 +27,25 @@ bool showMarketSessionOpenCandles =
 
 // Calculate Session Info
 // ============================================================================================================
-getSessionDays(sunSession, monSession, tueSession, wedSession, thuSession, friSession, satSession) =>
-    string sessionDays = ""
-    if sunSession
-        sessionDays += "1"
-    if monSession
-        sessionDays += "2"
-    if tueSession
-        sessionDays += "3"
-    if wedSession
-        sessionDays += "4"
-    if thuSession
-        sessionDays += "5"
-    if friSession
-        sessionDays += "6"
-    if satSession
-        sessionDays += "7"
+// getSessionDays(sunSession, monSession, tueSession, wedSession, thuSession, friSession, satSession) =>
+//     string sessionDays = ""
+//     if sunSession
+//         sessionDays += "1"
+//     if monSession
+//         sessionDays += "2"
+//     if tueSession
+//         sessionDays += "3"
+//     if wedSession
+//         sessionDays += "4"
+//     if thuSession
+//         sessionDays += "5"
+//     if friSession
+//         sessionDays += "6"
+//     if satSession
+//         sessionDays += "7"
 
 // Make a days of week string based on the value of the input checkboxes
-string sessionDays = getSessionDays(sunSession, monSession, tueSession, wedSession, thuSession, friSession, satSession)
+string sessionDays = "123456"// getSessionDays(sunSession, monSession, tueSession, wedSession, thuSession, friSession, satSession)
 
 // Nasdaq - PreMarket Hours - 4AM - 9.30AM EST
 // Nasdaq - Normal Hours - 9.30AM - 4PM EST / 14.30PM UTC - 21.00PM UTC
@@ -57,36 +58,37 @@ string sessionDays = getSessionDays(sunSession, monSession, tueSession, wedSessi
 // London - BST - UTC+1 - "Europe/London"
 // New York - EST - UTC-4 - "America/New_York"
 // Configure with SAST perspective
-string scriptTimezoneInput = 
-     input.string("Africa/Johannesburg", tooltip = "Script Timezone", group="Sessions")
-string nasdaqNormalSessionInput = 
-     input.session("1530-2200", "Nasdaq Session (SAST)", group="Sessions")
-string nasdaqDaysInput = 
-     input.string("123456", tooltip = "1 = Sunday, 7 = Saturday (SAST)", group="Sessions")
-string nasdaqSessionString = 
-     nasdaqNormalSessionInput + ":" + nasdaqDaysInput
+string scriptTimezoneInput = "Africa/Johannesburg"
+//      input.string("Africa/Johannesburg", tooltip = "Script Timezone", group="Sessions")
+// string nasdaqNormalSessionInput = 
+//      input.session("1530-2200", "Nasdaq Session (SAST)", group="Sessions")
+// string nasdaqDaysInput = 
+//      input.string("123456", tooltip = "1 = Sunday, 7 = Saturday (SAST)", group="Sessions")
+// string nasdaqSessionString = 
+//      nasdaqNormalSessionInput + ":" + nasdaqDaysInput
 
 // Configure market locations with SAST perspective
-string sydneySession = 
-     input.session(title="Sydney", defval="0000-0900:23456", inline="Sydney Time", group="Sessions")
-bool showSydneySession = 
-     input.bool(title="Show Sydney", defval=true, inline="Show Sydney Time", group="Sessions")
-string tokyoSession = 
-     input.session(title="Tokyo", defval="0200-0945:23456", inline="Tokyo Time",group="Sessions")
-bool showTokyoSession = 
-     input.bool(title="Show Tokyo", defval=true, inline="Show Tokyo Time", group="Sessions")
-string berlinSession = 
-     input.session(title="Berlin", defval="0900-1700:23456", inline="Berlin Time", group="Sessions")
-bool showBerlinSession = 
-     input.bool(title="Show Berlin", defval=true, inline="Show Berlin Time", group="Sessions")
-string londonSession = 
-     input.session(title="London", defval="0900-1700:23456", inline="London Time", group="Sessions")
-bool showLondonSession = 
-     input.bool(title="Show London", defval=true, inline="Show London Time", group="Sessions")
-string newYorkSession = 
-     input.session(title="New York", defval="1400-2300:23456", inline="New York Time", group="Sessions")
-bool showNewYorkSession = 
-     input.bool(title="Show New York", defval=true, inline="Show New York Time", group="Sessions")
+// TODO: Umm...see time() which accepts a timezone
+string sydneySession = "0000-0900:23456"
+     // input.session(title="Sydney", defval="0000-0900:23456", inline="Sydney Time", group="Sessions")
+bool showSydneySession = true
+     // input.bool(title="Show Sydney", defval=true, inline="Show Sydney Time", group="Sessions")
+string tokyoSession = "0200-0945:23456"
+     // input.session(title="Tokyo", defval="0200-0945:23456", inline="Tokyo Time",group="Sessions")
+bool showTokyoSession = true
+     // input.bool(title="Show Tokyo", defval=true, inline="Show Tokyo Time", group="Sessions")
+string berlinSession = "0900-1700:23456"
+     // input.session(title="Berlin", defval="0900-1700:23456", inline="Berlin Time", group="Sessions")
+bool showBerlinSession = true
+     // input.bool(title="Show Berlin", defval=true, inline="Show Berlin Time", group="Sessions")
+string londonSession = "0900-1700:23456"
+     // input.session(title="London", defval="0900-1700:23456", inline="London Time", group="Sessions")
+bool showLondonSession = true
+     // input.bool(title="Show London", defval=true, inline="Show London Time", group="Sessions")
+string newYorkSession = "1400-2300:23456"
+     // input.session(title="New York", defval="1400-2300:23456", inline="New York Time", group="Sessions")
+bool showNewYorkSession = true
+     // input.bool(title="Show New York", defval=true, inline="Show New York Time", group="Sessions")
 
 // https://www.tradingview.com/pine-script-docs/en/v5/concepts/Colors.html#constant-colors
 sydneySessionColour  = color.new(color.silver, 0)
@@ -119,9 +121,7 @@ sessionIsActive(sess) =>
 //     if barstate.isnew and sessionIsActive(sess)
 //         line.new(bar_index, open, bar_index, open * 2.01, extend = extend.none, color = colorz, style = line.style_solid, width = 1)
 
-
 // Highlight Session Open Candles
-
 barcolor(barstate.isnew and sessionIsActive(sydneySession) ? sydneySessionColour : na)
 plotshape(barstate.isnew and sessionIsActive(sydneySession), "Sydney", style=shape.triangleup, location=location.bottom, color=sydneySessionColour, size=size.tiny, text="🇦🇺", display = display.all - display.status_line)
 
@@ -136,7 +136,6 @@ plotshape(barstate.isnew and sessionIsActive(londonSession), "London", style=sha
 
 barcolor(barstate.isnew and sessionIsActive(newYorkSession) ? newYorkSessionColour : na)
 plotshape(barstate.isnew and sessionIsActive(newYorkSession), "New York", style=shape.triangleup, location=location.bottom, color = newYorkSessionColour, size = size.tiny, text="🇺🇸", display = display.all - display.status_line)
-
 
 // Print table with Session info
 printSessionInfo() =>
@@ -153,31 +152,31 @@ printSessionInfo() =>
     if (barstate.isnew and showMarketSessionInfoTable)
         table topRightTableInfo = table.new(position.top_right, columns = 3, rows = 6, frame_color = color.orange, border_width = 1, border_color = color.black)
 
-        table.cell(table_id = topRightTableInfo, row = 0, column = 0, text = "Session Times", bgcolor = color.lime)
+        table.cell(table_id = topRightTableInfo, row = 0, column = 0, text = "Session Times 🌍 ", bgcolor = color.lime)
         table.cell(table_id = topRightTableInfo, row = 0, column = 1, text = nameOfCurrentDay, bgcolor = color.lime)
         table.cell(table_id = topRightTableInfo, row = 0, column = 2, text = "", bgcolor = color.lime)
         
-        table.cell(table_id = topRightTableInfo, row = 1, column = 0, text = "🇦🇺 Sydney", bgcolor = sydneySessionColour)
+        table.cell(table_id = topRightTableInfo, row = 1, column = 0, text = "Sydney 🇦🇺 ", bgcolor = sydneySessionColour)
         table.cell(table_id = topRightTableInfo, row = 1, column = 1, text = sydneySession)
         table.cell(table_id = topRightTableInfo, row = 1, column = 2, text = (inSessionTimeslot(sydneySession) ? "Open" : "Closed"), bgcolor = (inSessionTimeslot(sydneySession) ? color.green : color.red))
 
-        table.cell(table_id = topRightTableInfo, row = 2, column = 0, text = "🇨🇳 Tokyo", bgcolor = tokyoSessionColour)
+        table.cell(table_id = topRightTableInfo, row = 2, column = 0, text = "Tokyo 🇨🇳 ", bgcolor = tokyoSessionColour)
         table.cell(table_id = topRightTableInfo, row = 2, column = 1, text = tokyoSession)
         table.cell(table_id = topRightTableInfo, row = 2, column = 2, text = (inSessionTimeslot(tokyoSession) ? "Open" : "Closed"), bgcolor = (inSessionTimeslot(tokyoSession) ? color.green : color.red))
 
-        table.cell(table_id = topRightTableInfo, row = 3, column = 0, text = "🇩🇪 Berlin", bgcolor = berlinSessionColour)
+        table.cell(table_id = topRightTableInfo, row = 3, column = 0, text = "Berlin 🇩🇪 ", bgcolor = berlinSessionColour)
         table.cell(table_id = topRightTableInfo, row = 3, column = 1, text = berlinSession)
         table.cell(table_id = topRightTableInfo, row = 3, column = 2, text = (inSessionTimeslot(berlinSession) ? "Open" : "Closed"), bgcolor = (inSessionTimeslot(berlinSession) ? color.green : color.red))
 
-        table.cell(table_id = topRightTableInfo, row = 4, column = 0, text = "🇬🇧 London", bgcolor = londonSessionColour)
+        table.cell(table_id = topRightTableInfo, row = 4, column = 0, text = "London 🇬🇧 ", bgcolor = londonSessionColour)
         table.cell(table_id = topRightTableInfo, row = 4, column = 1, text = londonSession)
         table.cell(table_id = topRightTableInfo, row = 4, column = 2, text = (inSessionTimeslot(londonSession) ? "Open" : "Closed"), bgcolor = (inSessionTimeslot(londonSession) ? color.green : color.red))
 
-        table.cell(table_id = topRightTableInfo, row = 5, column = 0, text = "🇺🇸 New York", bgcolor = newYorkSessionColour)
+        table.cell(table_id = topRightTableInfo, row = 5, column = 0, text = "New York 🇺🇸 ", bgcolor = newYorkSessionColour)
         table.cell(table_id = topRightTableInfo, row = 5, column = 1, text = newYorkSession)
         table.cell(table_id = topRightTableInfo, row = 5, column = 2, text = (inSessionTimeslot(newYorkSession) ? "Open" : "Closed"), bgcolor = (inSessionTimeslot(newYorkSession) ? color.green : color.red))
 
-printSessionInfo()
+// printSessionInfo()
 
 
 // ============================================================================================================
