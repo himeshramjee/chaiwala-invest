@@ -18,8 +18,11 @@ strategy("Time-Based Entry with Low Volume", overlay=true, initial_capital=1000,
 // ============================================================================================================
 var scriptTimezoneInput = "Africa/Johannesburg"
 var time_sast = input.time(timestamp("01 May 2023 00:00"),  title="Start Date", group="Trading Days Period")
-var time_end = input.time(timestamp("31 May 2023 00:00"), title="End Date", group="Trading Days Period")
-var orderExecutionTime = "1500-1501:23456"
+var time_end = input.time(timestamp("30 June 2023 00:00"), title="End Date", group="Trading Days Period")
+// FIXME: These assumes and requires that the chart is on 30m timeframe. 
+// See isTimeToTakeTrade and signalBarOffset config further down. The offset must be adjusted if the execution time is changed.
+var orderExecutionTime = "1430-1431:23456"
+// var orderExecutionTime = "1500-1501:23456"
 
 // Check if current time is within specified session timeframe
 inSessionTimeslot(sess) => not na(time(timeframe.period, sess, scriptTimezoneInput))
@@ -58,7 +61,7 @@ var showSellSignals = input.bool(true, title="Show Sell signals", group="Signal 
 buySignalActive = false
 sellSignalActive = false
 // FIXME: These assumes and requires that the chart is on 30m timeframe
-signalBarOffset = 1
+signalBarOffset = 0
 closePrice = close[signalBarOffset] // close or close[0] is the close price of the current bar, or current/latest price of a yet incomplete bar
 openPrice = open[signalBarOffset] // open or open[0] is the current/latest open price
 volumeTraded = volume[signalBarOffset] // volume or volume[0] is the volume of the current bar
@@ -69,9 +72,12 @@ if isTimeToTakeTrade and barstate.isconfirmed
     bullish_condition = closePrice > openPrice
     bearish_condition = closePrice < openPrice
     low_volume_condition = volumeTraded <= highVolumeThreshold
+    // high_volume_condition = volumeTraded > highVolumeThreshold
 
     buySignalActive := bearish_condition and low_volume_condition
     sellSignalActive := bullish_condition and low_volume_condition
+    // buySignalActive := bullish_condition and high_volume_condition
+    // sellSignalActive := bearish_condition and high_volume_condition
 
 plotshape(series=buySignalActive and showBuySignals, style=shape.triangleup, location=location.bottom, color=color.blue, offset=-signalBarOffset)
 plotshape(series=sellSignalActive and showSellSignals, style=shape.triangledown, location=location.bottom, color=color.red, offset=-signalBarOffset)
@@ -90,8 +96,8 @@ if sellSignalActive and showSellSignals
 // Trades - Risk Management
 // ============================================================================================================
 var lotSize = input.float(30, title="Trade size (lots)", group="Trade Management")
-var profitTicks = input.float(4000, title="Take profit (ticks)", group="Trade Management") // 2100 ticks, 210 pips, $21
-var lossTicks = input.float(5000, title="Stop loss (ticks)", group="Trade Management") // 4000 ticks, 400 pips, $40
+var profitTicks = input.float(2000, title="Take profit (ticks)", group="Trade Management") // 2100 ticks, 210 pips, $21
+var lossTicks = input.float(3000, title="Stop loss (ticks)", group="Trade Management") // 4000 ticks, 400 pips, $40
 
 // Trades - Position selection
 // ============================================================================================================
