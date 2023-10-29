@@ -110,6 +110,20 @@ var dataProviders = [
       readOnlySecret: "",
     },
   },
+  {
+    id: 9,
+    name: "gateio.com",
+    shortCode: "GAT",
+    websiteUrl: "https://gate.io",
+    apiEndpoint: "https://apis.himesh.ramjee.co.za", // "https://api.gateio.ws/"
+    apiRootPath: "/gateio", // "/api/v4/spot/tickers"
+    // apiSymbolPricePath: "/api/v4/spot/tickers?currency_pair={0}_{1}",
+    apiSymbolPricePath: "/price?currency_pair={0}_{1}",
+    auth: {
+      readOnlyKey: "",
+      readOnlySecret: "",
+    },
+  },
 ];
 
 function getAPIEndpointForCryptoPrices(
@@ -194,6 +208,11 @@ function extractPriceFromResponse(
           price = payload.data.price;
         }
         break;
+      case "GAT":
+        if (payload[0] && payload[0].last) {
+          price = payload[0].last;
+        }
+        break;
     }
   }
 
@@ -201,15 +220,14 @@ function extractPriceFromResponse(
 }
 
 function getAPIEndpointForCryptoPricesTest() {
-  /*
-  Logger.log(getAPIEndpointForCryptoPrices("ETH", "BTC", "bin"));
-  Logger.log(getAPIEndpointForCryptoPrices("ETH", "BTC", "cg"));
-  Logger.log(getAPIEndpointForCryptoPrices("ETH", "BTC", "cmc"));
-  Logger.log(getAPIEndpointForCryptoPrices("BTC", "USDT", "cro"));
-  Logger.log(getAPIEndpointForCryptoPrices("BTC", "ZAR", "CMC"));
-  Logger.log(getAPIEndpointForCryptoPrices("BTC", "ZAR", "byb"));
-  */
-  Logger.log(getAPIEndpointForCryptoPrices("BTC", "USDT", "okx"));
+  // Logger.log(getAPIEndpointForCryptoPrices("ETH", "BTC", "bin"));
+  // Logger.log(getAPIEndpointForCryptoPrices("ETH", "BTC", "cg"));
+  // Logger.log(getAPIEndpointForCryptoPrices("ETH", "BTC", "cmc"));
+  // Logger.log(getAPIEndpointForCryptoPrices("BTC", "USDT", "cro"));
+  // Logger.log(getAPIEndpointForCryptoPrices("BTC", "ZAR", "CMC"));
+  // Logger.log(getAPIEndpointForCryptoPrices("BTC", "ZAR", "byb"));
+  // Logger.log(getAPIEndpointForCryptoPrices("BTC", "USDT", "okx"));
+  Logger.log(getAPIEndpointForCryptoPrices("OCTO", "USDT", "gat"));
 
   // Logger.log("R 807 769,00".replace(/\s/g, ''));
 }
