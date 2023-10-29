@@ -117,9 +117,6 @@ function getAPIEndpointForCryptoPrices(
   quoteCurrency,
   providerShortCode
 ) {
-  // FIXME: These are *NOT* necessarily sensible defaults! Hightlight to user.
-  // baseCurrency = (baseCurrency && baseCurrency.trim().length > 0) ? baseCurrency.toUpperCase() : "BTC";
-  // quoteCurrency = (quoteCurrency && quoteCurrency.trim().length > 0) ? quoteCurrency.toUpperCase() : 'USDT';
   providerShortCode =
     !providerShortCode || providerShortCode.trim().length >= 0
       ? providerShortCode.toUpperCase()
@@ -148,36 +145,59 @@ function extractPriceFromResponse(
   providerShortCode
 ) {
   let payload = JSON.parse(response.getContentText());
+  let price = -1;
 
   if (payload) {
     switch (providerShortCode.toUpperCase()) {
       case "CMC":
-        return payload[0]["price_" + quoteCurrency];
+        if (payload[0]["price_" + quoteCurrency]) {
+          price = payload[0]["price_" + quoteCurrency];
+        }
+        break;
       case "CG":
-        return payload[baseCurrency][quoteCurrency];
+        if (payload[baseCurrency][quoteCurrency]) {
+          price = payload[baseCurrency][quoteCurrency];
+        }
+        break;
       case "BIN":
-        return payload.price;
+        if (payload.price) {
+          price = payload.price;
+        }
+        break;
       case "CRO":
-        return payload.result.data[0].l;
+        if (payload.result && payload.result.data && payload.result.data[0].l) {
+          price = payload.result.data[0].l;
+        }
+        break;
       case "VAL":
-        // return new Intl.NumberFormat('en-ZA', { style: 'currency', currency: quoteCurrency }).format(payload.lastTradedPrice).replace(/\s/g, '');
-        return payload.lastTradedPrice;
+        // price = new Intl.NumberFormat('en-ZA', { style: 'currency', currency: quoteCurrency }).format(payload.lastTradedPrice).replace(/\s/g, '');
+        if (payload.lastTradedPrice) {
+          price = payload.lastTradedPrice;
+        }
+        break;
       case "BYB":
-        return payload.result[0].last_price;
+        if (
+          payload.result &&
+          payload.result.length > 0 &&
+          payload.result[0].last_price
+        ) {
+          price = payload.result[0].last_price;
+        }
+        break;
       case "OKX":
-        return payload.data[0].idxPx;
+        if (payload.data && payload.data[0].idxPx) {
+          price = payload.data[0].idxPx;
+        }
+        break;
       case "KUC":
-        return payload.data.price;
-      default:
-        return (
-          "Failed to parse price data. Unsupported provider: " +
-          providerShortCode +
-          "."
-        );
+        if (payload.data && payload.data.price) {
+          price = payload.data.price;
+        }
+        break;
     }
-  } else {
-    return "Failed to parse price data.";
   }
+
+  return price;
 }
 
 function getAPIEndpointForCryptoPricesTest() {
