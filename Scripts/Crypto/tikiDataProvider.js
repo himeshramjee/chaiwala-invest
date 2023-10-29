@@ -48,7 +48,7 @@ var dataProviders = [
     websiteUrl: "https://crypto.com",
     apiEndpoint: "https://apis.himesh.ramjee.co.za", // "https://api.crypto.com",
     apiRootPath: "/cryptocom/cryptocom", // "/v2/public",
-    apiSymbolPricePath: "/get-ticker?instrument_name={0}_{1}",
+    apiSymbolPricePath: "/price?instrument_name={0}_{1}",
     auth: {
       readOnlyKey: "",
       readOnlySecret: "",
@@ -62,6 +62,7 @@ var dataProviders = [
     apiEndpoint: "https://apis.himesh.ramjee.co.za", // "https://api.valr.com",
     apiRootPath: "/valr/valr", // "/v1/public",
     apiSymbolPricePath: "/v1/public/{0}{1}/marketsummary",
+    // apiSymbolPricePath: "/price?symbol={0}{1}",
     auth: {
       readOnlyKey: "",
       readOnlySecret: "",
@@ -72,9 +73,9 @@ var dataProviders = [
     name: "Bybit.com",
     shortCode: "BYB",
     websiteUrl: "https://bybit.com",
-    apiEndpoint: "https://api.bybit.com", // "https://apis.himesh.ramjee.co.za"
-    apiRootPath: "/v2/public", // "/v2/public",
-    apiSymbolPricePath: "/tickers?symbol={0}{1}",
+    apiEndpoint: "https://apis.himesh.ramjee.co.za", // "https://api.bybit.com"
+    apiRootPath: "/bybit/bybit", // "/v2/public",
+    apiSymbolPricePath: "/price?symbol={0}{1}",
     auth: {
       readOnlyKey: "",
       readOnlySecret: "",
@@ -128,7 +129,7 @@ function extractPriceFromResponse(
       case "BIN":
         return payload.price;
       case "CRO":
-        return payload.result.data["a"];
+        return payload.result.data[0].l;
       case "VAL":
         // return new Intl.NumberFormat('en-ZA', { style: 'currency', currency: quoteCurrency }).format(payload.lastTradedPrice).replace(/\s/g, '');
         return payload.lastTradedPrice;
