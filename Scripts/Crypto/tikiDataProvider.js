@@ -1,4 +1,5 @@
-// NB: Not for production use!
+// NB: Not for production use! Price accuracy hasn't been checked and there's zero error handling
+// As providers grow, the code will need to be refactored to make this look more like a provider pattern
 // ========================================================================
 
 var dataProviders = [
@@ -34,7 +35,7 @@ var dataProviders = [
     shortCode: "BIN",
     websiteUrl: "https://binance.com",
     apiEndpoint: "https://apis.himesh.ramjee.co.za", // "https://api.binance.com"
-    apiRootPath: "/binance/binance", // "/api/v3/ticker/price"
+    apiRootPath: "/binance", // "/api/v3/ticker/price"
     apiSymbolPricePath: "/price?symbol={0}{1}",
     auth: {
       readOnlyKey: "",
@@ -47,7 +48,7 @@ var dataProviders = [
     shortCode: "CRO",
     websiteUrl: "https://crypto.com",
     apiEndpoint: "https://apis.himesh.ramjee.co.za", // "https://api.crypto.com",
-    apiRootPath: "/cryptocom/cryptocom", // "/v2/public",
+    apiRootPath: "/cryptocom", // "/v2/public",
     apiSymbolPricePath: "/price?instrument_name={0}_{1}",
     auth: {
       readOnlyKey: "",
@@ -60,7 +61,7 @@ var dataProviders = [
     shortCode: "VAL",
     websiteUrl: "https://valr.com",
     apiEndpoint: "https://apis.himesh.ramjee.co.za", // "https://api.valr.com",
-    apiRootPath: "/valr/valr", // "/v1/public",
+    apiRootPath: "/valr", // "/v1/public",
     apiSymbolPricePath: "/v1/public/{0}{1}/marketsummary",
     // apiSymbolPricePath: "/price?symbol={0}{1}",
     auth: {
@@ -69,13 +70,41 @@ var dataProviders = [
     },
   },
   {
-    id: 5,
+    id: 6,
     name: "Bybit.com",
     shortCode: "BYB",
     websiteUrl: "https://bybit.com",
     apiEndpoint: "https://apis.himesh.ramjee.co.za", // "https://api.bybit.com"
-    apiRootPath: "/bybit/bybit", // "/v2/public",
+    apiRootPath: "/bybit", // "/v2/public",
     apiSymbolPricePath: "/price?symbol={0}{1}",
+    auth: {
+      readOnlyKey: "",
+      readOnlySecret: "",
+    },
+  },
+  {
+    id: 7,
+    name: "Okx.com",
+    shortCode: "OKX",
+    websiteUrl: "https://okx.com",
+    apiEndpoint: "https://apis.himesh.ramjee.co.za", // "https://www.okx.com"
+    apiRootPath: "/okx", // "api/v5/market/index-tickers?instId=BTC-USDT"
+    apiSymbolPricePath: "/api/v5/market/index-tickers?instId={0}-{1}",
+    // apiSymbolPricePath: "/price?symbol={0}{1}",
+    auth: {
+      readOnlyKey: "",
+      readOnlySecret: "",
+    },
+  },
+  {
+    id: 8,
+    name: "kucoin.com",
+    shortCode: "KUC",
+    websiteUrl: "https://kucoin.com",
+    apiEndpoint: "https://apis.himesh.ramjee.co.za", // "https://api.kucoin.com"
+    apiRootPath: "/kucoin", // "/api/v1/market/orderbook/level1?symbol=BTC-USDT"
+    // apiSymbolPricePath: "/api/v1/market/orderbook/level1?symbol={0}-{1}",
+    apiSymbolPricePath: "/price?symbol={0}-{1}",
     auth: {
       readOnlyKey: "",
       readOnlySecret: "",
@@ -135,6 +164,10 @@ function extractPriceFromResponse(
         return payload.lastTradedPrice;
       case "BYB":
         return payload.result[0].last_price;
+      case "OKX":
+        return payload.data[0].idxPx;
+      case "KUC":
+        return payload.data.price;
       default:
         return (
           "Failed to parse price data. Unsupported provider: " +
@@ -154,8 +187,9 @@ function getAPIEndpointForCryptoPricesTest() {
   Logger.log(getAPIEndpointForCryptoPrices("ETH", "BTC", "cmc"));
   Logger.log(getAPIEndpointForCryptoPrices("BTC", "USDT", "cro"));
   Logger.log(getAPIEndpointForCryptoPrices("BTC", "ZAR", "CMC"));
-  */
   Logger.log(getAPIEndpointForCryptoPrices("BTC", "ZAR", "byb"));
+  */
+  Logger.log(getAPIEndpointForCryptoPrices("BTC", "USDT", "okx"));
 
   // Logger.log("R 807 769,00".replace(/\s/g, ''));
 }
