@@ -1,7 +1,81 @@
 // NB: Not for production use!
 // ========================================================================
 
+// https://thegraph.com/hosted-service/subgraph/uniswap/uniswap-v3
+function getUniSwapPrice(symbol) {
+  const uniswapGraphEndpoint =
+    "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3";
+
+  const ethPriceQuery = `
+    query bundles {
+      bundles(where: { id: "1" }) {
+        ethPriceUSD
+      }
+    }`;
+
+  const tokenPriceQuery1 = `
+    query tokens {
+      tokens(first: 1, 
+        where: { symbol: "${symbol}" }) {
+          tokenDayData {
+            priceUSD
+          }
+        }
+    }`;
+
+  const tokenPriceQuery2 = `
+    query tokenDayDatas {
+      tokenDayDatas(first: 1, 
+        orderBy: date, orderDirection: desc, 
+        where: {
+          token_: { 
+            symbol: "${symbol}" 
+          }
+        }) 
+        {
+          priceUSD
+        }
+    }`;
+
+  // const requestPayload = ethPriceQuery;
+  // const requestPayload = tokenPriceQuery1;
+  const requestPayload = tokenPriceQuery2;
+
+  var requestOptions = {
+    method: "post",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    payload: JSON.stringify({ query: requestPayload }),
+    followRedirects: false,
+  };
+
+  let response;
+  try {
+    Logger.log(UrlFetchApp.getRequest(uniswapGraphEndpoint, requestOptions));
+    response = UrlFetchApp.fetch(uniswapGraphEndpoint, requestOptions);
+
+    if (!response || !response.getContentText()) {
+      let errMsg = "Failed to fetch data from API.";
+      Logger.log(errMsg);
+      return errMsg;
+    }
+  } catch (err) {
+    response = err;
+  }
+
+  response = JSON.parse(response.getContentText());
+  return response.data && response.data.tokenDayDatas
+    ? response.data.tokenDayDatas[0].priceUSD
+    : 0;
+}
+
 function getCryptoPrice(baseCurrency, quoteCurrency, providerShortCode) {
+  if (providerShortCode && providerShortCode.toUpperCase() === "UNI") {
+    // TODO: Support quoteCurrency
+    return getUniSwapPrice(baseCurrency);
+  }
+
   let providerUrl = getAPIEndpointForCryptoPrices(
     baseCurrency,
     quoteCurrency,
@@ -102,7 +176,7 @@ function getAllBinancePrices() {
 }
 
 function getCryptoPriceTest() {
-  Logger.log(getCryptoPrice("0x0", "USD", "cmc"));
+  // Logger.log(getCryptoPrice("RVF", "USD", "cmc"));
   // Logger.log(getCryptoPrice("BTC", "USDT", "bin"));
   // Logger.log(getCryptoPrice("BTC", "USDT", "cro"));
   // Logger.log(getCryptoPrice("BTC", "USDT", "val"));
@@ -111,8 +185,13 @@ function getCryptoPriceTest() {
   // Logger.log(getCryptoPrice("BTC", "USDT", "kuc"));
   // Logger.log(getCryptoPrice("OCTO", "USDT", "gat"));
   // Logger.log(getCryptoPrice("BTC", "USDT", "mexc"));
+  Logger.log(getCryptoPrice("BTC", "USDT", "uni"));
 }
 
 function getAllBinancePricesTest() {
   getAllBinancePrices();
+}
+
+function getUniSwapPriceTest() {
+  Logger.log(getUniSwapPrice("RVF"));
 }
