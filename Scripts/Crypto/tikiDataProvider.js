@@ -8,12 +8,12 @@ var dataProviders = [
     name: "Coin Market Cap",
     shortCode: "CMC",
     websiteUrl: "https://coinmarketcap.com",
-    apiEndpoint: "https://api.coinmarketcap.com",
+    apiEndpoint: "https://pro-api.coinmarketcap.com",
     apiRootPath: "/v1/cryptocurrency",
     apiSymbolPricePath: "/quotes/latest?symbol={0}&convert={1}",
     auth: {
-      readOnlyKey: "",
-      readOnlySecret: "",
+      apiKeyHeader: "X-CMC_PRO_API_KEY",
+      apiKeyValue: "fd12bab1-611a-413e-8302-f01da8e381fc",
     },
   },
   {
@@ -25,8 +25,8 @@ var dataProviders = [
     apiRootPath: "/v3/simple",
     apiSymbolPricePath: "/price?ids={0}&vs_currencies={1}",
     auth: {
-      readOnlyKey: "",
-      readOnlySecret: "",
+      apiKeyHeader: "",
+      apiKeyValue: "",
     },
   },
   {
@@ -38,8 +38,8 @@ var dataProviders = [
     apiRootPath: "/binance", // "/api/v3/ticker/price"
     apiSymbolPricePath: "/price?symbol={0}{1}",
     auth: {
-      readOnlyKey: "",
-      readOnlySecret: "",
+      apiKeyHeader: "",
+      apiKeyValue: "",
     },
   },
   {
@@ -51,8 +51,8 @@ var dataProviders = [
     apiRootPath: "/cryptocom", // "/v2/public",
     apiSymbolPricePath: "/price?instrument_name={0}_{1}",
     auth: {
-      readOnlyKey: "",
-      readOnlySecret: "",
+      apiKeyHeader: "",
+      apiKeyValue: "",
     },
   },
   {
@@ -65,8 +65,8 @@ var dataProviders = [
     apiSymbolPricePath: "/v1/public/{0}{1}/marketsummary",
     // apiSymbolPricePath: "/price?symbol={0}{1}",
     auth: {
-      readOnlyKey: "",
-      readOnlySecret: "",
+      apiKeyHeader: "",
+      apiKeyValue: "",
     },
   },
   {
@@ -78,8 +78,8 @@ var dataProviders = [
     apiRootPath: "/bybit", // "/v2/public",
     apiSymbolPricePath: "/price?symbol={0}{1}",
     auth: {
-      readOnlyKey: "",
-      readOnlySecret: "",
+      apiKeyHeader: "",
+      apiKeyValue: "",
     },
   },
   {
@@ -92,8 +92,8 @@ var dataProviders = [
     apiSymbolPricePath: "/api/v5/market/index-tickers?instId={0}-{1}",
     // apiSymbolPricePath: "/price?symbol={0}{1}",
     auth: {
-      readOnlyKey: "",
-      readOnlySecret: "",
+      apiKeyHeader: "",
+      apiKeyValue: "",
     },
   },
   {
@@ -106,8 +106,8 @@ var dataProviders = [
     // apiSymbolPricePath: "/api/v1/market/orderbook/level1?symbol={0}-{1}",
     apiSymbolPricePath: "/price?symbol={0}-{1}",
     auth: {
-      readOnlyKey: "",
-      readOnlySecret: "",
+      apiKeyHeader: "",
+      apiKeyValue: "",
     },
   },
   {
@@ -120,11 +120,46 @@ var dataProviders = [
     // apiSymbolPricePath: "/api/v4/spot/tickers?currency_pair={0}_{1}",
     apiSymbolPricePath: "/price?currency_pair={0}_{1}",
     auth: {
-      readOnlyKey: "",
-      readOnlySecret: "",
+      apiKeyHeader: "",
+      apiKeyValue: "",
+    },
+  },
+  {
+    id: 10,
+    name: "mexc.com",
+    shortCode: "MEXC",
+    websiteUrl: "https://mexc.com",
+    apiEndpoint: "https://apis.himesh.ramjee.co.za", // "https://api.mexc.com"
+    apiRootPath: "/mexc", // "/api/v3/ticker"
+    // apiSymbolPricePath: "/api/v3/ticker/price?symbol={0}{1}",
+    apiSymbolPricePath: "/api/v3/ticker/price?symbol={0}{1}",
+    auth: {
+      apiKeyHeader: "",
+      apiKeyValue: "",
     },
   },
 ];
+
+function getAPIProviderAPIAuthData(providerShortCode) {
+  providerShortCode =
+    !providerShortCode || providerShortCode.trim().length >= 0
+      ? providerShortCode.toUpperCase()
+      : "CMC";
+
+  let authData = {
+    authKeyHeader: "",
+    authKeyValue: "",
+  };
+
+  dataProviders.forEach((provider) => {
+    if (provider.shortCode === providerShortCode) {
+      authData.authKeyHeader = provider.auth.apiKeyHeader;
+      authData.authKeyValue = provider.auth.apiKeyValue;
+    }
+  });
+
+  return authData;
+}
 
 function getAPIEndpointForCryptoPrices(
   baseCurrency,
@@ -159,13 +194,13 @@ function extractPriceFromResponse(
   providerShortCode
 ) {
   let payload = JSON.parse(response.getContentText());
-  let price = -1;
+  let price = 0;
 
   if (payload) {
     switch (providerShortCode.toUpperCase()) {
       case "CMC":
-        if (payload[0]["price_" + quoteCurrency]) {
-          price = payload[0]["price_" + quoteCurrency];
+        if (payload.data[baseCurrency].quote[quoteCurrency].price) {
+          price = payload.data[baseCurrency].quote[quoteCurrency].price;
         }
         break;
       case "CG":
@@ -199,7 +234,7 @@ function extractPriceFromResponse(
         }
         break;
       case "OKX":
-        if (payload.data && payload.data[0].idxPx) {
+        if (payload.data && payload.data.length > 0 && payload.data[0].idxPx) {
           price = payload.data[0].idxPx;
         }
         break;
@@ -213,10 +248,19 @@ function extractPriceFromResponse(
           price = payload[0].last;
         }
         break;
+      case "MEXC":
+        if (payload && payload) {
+          price = payload.price;
+        }
+        break;
     }
   }
 
   return price;
+}
+
+function getAPIProviderAPIAuthDataTest() {
+  Logger.log(getAPIProviderAPIAuthData("cmc"));
 }
 
 function getAPIEndpointForCryptoPricesTest() {
@@ -227,7 +271,7 @@ function getAPIEndpointForCryptoPricesTest() {
   // Logger.log(getAPIEndpointForCryptoPrices("BTC", "ZAR", "CMC"));
   // Logger.log(getAPIEndpointForCryptoPrices("BTC", "ZAR", "byb"));
   // Logger.log(getAPIEndpointForCryptoPrices("BTC", "USDT", "okx"));
-  Logger.log(getAPIEndpointForCryptoPrices("OCTO", "USDT", "gat"));
-
+  Logger.log(getAPIEndpointForCryptoPrices("BTC", "USDT", "gat"));
+  Logger.log(getAPIEndpointForCryptoPrices("BTC", "USDT", "mex"));
   // Logger.log("R 807 769,00".replace(/\s/g, ''));
 }

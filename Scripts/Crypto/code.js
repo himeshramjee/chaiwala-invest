@@ -14,16 +14,20 @@ function getCryptoPrice(baseCurrency, quoteCurrency, providerShortCode) {
     return;
   }
 
+  let authData = getAPIProviderAPIAuthData(providerShortCode);
+  authHeaderName = authData.authKeyHeader || "x-no-auth";
+  authHeaderValue = authData.authKeyValue;
+
   let requestParams = {
     method: "get",
     headers: {
       "content-type": "application/x-www-form-urlencoded",
-      // , "X-Forwarded-For" : ""
-      // , "X-MBX-APIKEY": "vWtLUVUzPu4KxyYwrLIwRxpoM9OnEMNL7KZLyTGuf58rYilLsXy9BEDB2ONk19fQ"
+      [authHeaderName]: authHeaderValue, // [authHeaderName] uses concept of computed property names and allows for dynamically setting that here
     },
     muteHttpExceptions: true,
     payload: null,
   };
+
   let response;
   try {
     Logger.log(UrlFetchApp.getRequest(providerUrl, requestParams));
@@ -98,14 +102,15 @@ function getAllBinancePrices() {
 }
 
 function getCryptoPriceTest() {
-  // Logger.log(getCryptoPrice("SHR", "USD", "cmc"));
+  Logger.log(getCryptoPrice("0x0", "USD", "cmc"));
   // Logger.log(getCryptoPrice("BTC", "USDT", "bin"));
   // Logger.log(getCryptoPrice("BTC", "USDT", "cro"));
   // Logger.log(getCryptoPrice("BTC", "USDT", "val"));
   // Logger.log(getCryptoPrice("XRP", "BTC", "byb"));
   // Logger.log(getCryptoPrice("BTC", "USDT", "okx"));
   // Logger.log(getCryptoPrice("BTC", "USDT", "kuc"));
-  Logger.log(getCryptoPrice("OCTO", "USDT", "gat"));
+  // Logger.log(getCryptoPrice("OCTO", "USDT", "gat"));
+  // Logger.log(getCryptoPrice("BTC", "USDT", "mexc"));
 }
 
 function getAllBinancePricesTest() {
