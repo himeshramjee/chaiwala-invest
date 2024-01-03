@@ -185,6 +185,7 @@ function getCryptoPriceTest() {
   // Logger.log(getCryptoPrice("BTC", "USDT", "kuc"));
   // Logger.log(getCryptoPrice("OCTO", "USDT", "gat"));
   // Logger.log(getCryptoPrice("BTC", "USDT", "mexc"));
+
   Logger.log(getCryptoPrice("BTC", "USDT", "uni"));
 }
 
