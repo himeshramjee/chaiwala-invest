@@ -1,59 +1,81 @@
-var taxBrackets = [
-  { min: 1, max: 205900 },
-  { min: 205901, max: 321600 },
-  { min: 321601, max: 445100 },
-  { min: 445101, max: 584200 },
-  { min: 584201, max: 744800 },
-  { min: 744801, max: 1577300 },
-  { min: 1577301, max: 100000000 },
-];
+var maxRangeHighestBracket = 100000000000;
+var taxTables = [
+  { taxYear: 2024, rate: 18, min: 1, max: 226000, base: 0 },
+  { taxYear: 2024, rate: 26, min: 237101, max: 370500, base: 41678 },
+  { taxYear: 2024, rate: 31, min: 370501, max: 512800, base: 77362 },
+  { taxYear: 2024, rate: 36, min: 512801, max: 673000, base: 121475 },
+  { taxYear: 2024, rate: 39, min: 673001, max: 857900, base: 179147 },
+  { taxYear: 2024, rate: 41, min: 857901, max: 1817000, base: 251258 },
+  {
+    taxYear: 2024,
+    rate: 45,
+    min: 1817001,
+    max: maxRangeHighestBracket,
+    base: 644489,
+  },
 
-var taxBracketsRates = [
-  { key: 1, rate: 18 },
-  { key: 205901, rate: 26 },
-  { key: 321601, rate: 31 },
-  { key: 445101, rate: 36 },
-  { key: 584201, rate: 39 },
-  { key: 744801, rate: 41 },
-  { key: 1577301, rate: 45 },
-];
-
-var taxBracketsBase = [
-  { key: 1, base: 0 },
-  { key: 205901, base: 37062 },
-  { key: 321601, base: 67144 },
-  { key: 445101, base: 105429 },
-  { key: 584201, base: 155505 },
-  { key: 744801, base: 218139 },
-  { key: 1577301, base: 559464 },
+  { taxYear: 2023, rate: 18, min: 1, max: 226000, base: 0 },
+  { taxYear: 2023, rate: 26, min: 226001, max: 353100, base: 40680 },
+  { taxYear: 2023, rate: 31, min: 353101, max: 488700, base: 73726 },
+  { taxYear: 2023, rate: 36, min: 488701, max: 641400, base: 115762 },
+  { taxYear: 2023, rate: 39, min: 641401, max: 817600, base: 170734 },
+  { taxYear: 2023, rate: 41, min: 817601, max: 1731600, base: 239452 },
+  {
+    taxYear: 2023,
+    rate: 45,
+    min: 1731601,
+    max: maxRangeHighestBracket,
+    base: 614192,
+  },
 ];
 
 var taxBracketMin;
 var taxRate;
 var taxBase;
 
-function GetZATax(income) {
+function GetZATax(year, income) {
   var estimatedTaxAmount;
 
-  taxBrackets.forEach(function (bracket) {
-    if (bracket.min <= income && income <= bracket.max) {
-      taxBracketMin = bracket.min;
+  console.log("inputs - year: " + year + ", income: " + income + ".");
+
+  var usageMsg = "Usage: GetZATax(<tax-year> 2023, <taxable-income> 1024204)";
+  var usageMsgYearLimits =
+    "\tBoth <tax-year> (2023-2024 only) and <taxable-income> are required.";
+  var errorMsgInvalidYear =
+    "Invalid input - Configured years are 2023-2024 only.";
+  var errorMsgInvalidIncome =
+    "Invalid input - Taxable income value is invalid.";
+
+  console.log("Validating tax year...");
+  if (!year || year < 2023 || year > 2024) {
+    console.log(usageMsg + "\n" + usageMsgYearLimits);
+    throw errorMsgInvalidYear;
+  }
+
+  console.log("Validating taxable income...");
+  if (!income || income <= 0 || income > maxRangeHighestBracket) {
+    console.log(usageMsg + "\n" + usageMsgYearLimits);
+    throw errorMsgInvalidIncome;
+  }
+
+  taxTables.forEach((row) => {
+    if (row.taxYear === year) {
+      if (row.min <= income && income <= row.max) {
+        taxBracketMin = row.min;
+        taxRate = row.rate;
+        taxBase = row.base;
+      }
     }
   });
 
-  Logger.log("Using bracket key: " + taxBracketMin);
-  taxBracketsRates.forEach(function (rates) {
-    if (rates.key === taxBracketMin) {
-      taxRate = rates.rate;
-    }
-  });
-
-  Logger.log("Using tax rate: " + taxRate);
-  taxBracketsBase.forEach(function (bracketBase) {
-    if (bracketBase.key === taxBracketMin) {
-      taxBase = bracketBase.base;
-    }
-  });
+  if (!taxBracketMin || !taxRate || !taxBase) {
+    throw (
+      "Couldn't calculate estimated " +
+      year +
+      " tax amount for income value of " +
+      income
+    );
+  }
 
   Logger.log("Using tax base: " + taxBase);
 
@@ -67,10 +89,37 @@ function GetZATax(income) {
 
   if (estimatedTaxAmount <= 0) {
     throw (
-      "Couldn't calculate estimated tax amount for income value of " + income
+      "Couldn't calculate estimated " +
+      year +
+      " tax amount for income value of " +
+      income
     );
   }
 
   Logger.log("Estimated tax: " + estimatedTaxAmount);
   return estimatedTaxAmount;
+}
+
+function getZATaxTest_unknownYear() {
+  var year = 2022;
+  console.log(
+    "Tax burden for year " + year + " is calculated to be " + GetZATax(year, 0)
+  );
+}
+
+function getZATaxTest_invalidIncome() {
+  var year = 2023;
+  console.log(
+    "Tax burden for year " + year + " is calculated to be " + GetZATax(year, -1)
+  );
+}
+
+function getZATaxTest_41() {
+  var year = 2023;
+  console.log(
+    "Tax burden for year " +
+      year +
+      " is calculated to be " +
+      GetZATax(year, 1272600)
+  );
 }
