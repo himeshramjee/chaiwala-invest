@@ -76,7 +76,7 @@ var dataProviders = [
     websiteUrl: "https://bybit.com",
     apiEndpoint: "https://apis.himesh.ramjee.co.za", // "https://api.bybit.com"
     apiRootPath: "/bybit", // "/v2/public",
-    apiSymbolPricePath: "/price?symbol={0}{1}",
+    apiSymbolPricePath: "/price?category=spot&symbol={0}{1}",
     auth: {
       apiKeyHeader: "",
       apiKeyValue: "",
@@ -138,6 +138,20 @@ var dataProviders = [
       apiKeyValue: "",
     },
   },
+  {
+    id: 11,
+    name: "dexscreener.com",
+    shortCode: "DEXS",
+    websiteUrl: "https://dexscreener.com",
+    apiEndpoint: "https://apis.himesh.ramjee.co.za", // "https://api.mexc.com"
+    apiRootPath: "/dexs", // "/api/v3/ticker"
+    // apiSymbolPricePath: "/api/v3/ticker/price?symbol={0}{1}",
+    apiSymbolPricePath: "https://api.dexscreener.com/latest/dex/tokens/{0}",
+    auth: {
+      apiKeyHeader: "",
+      apiKeyValue: "",
+    },
+  },
 ];
 
 function getAPIProviderAPIAuthData(providerShortCode) {
@@ -194,6 +208,7 @@ function extractPriceFromResponse(
   providerShortCode
 ) {
   let payload = JSON.parse(response.getContentText());
+  Logger.log(payload);
   let price = 0;
 
   if (payload) {
@@ -227,10 +242,10 @@ function extractPriceFromResponse(
       case "BYB":
         if (
           payload.result &&
-          payload.result.length > 0 &&
-          payload.result[0].last_price
+          payload.result.list.length > 0 &&
+          payload.result.list[0].lastPrice
         ) {
-          price = payload.result[0].last_price;
+          price = payload.result.list[0].lastPrice;
         }
         break;
       case "OKX":
@@ -264,14 +279,14 @@ function getAPIProviderAPIAuthDataTest() {
 }
 
 function getAPIEndpointForCryptoPricesTest() {
-  // Logger.log(getAPIEndpointForCryptoPrices("ETH", "BTC", "bin"));
+  Logger.log(getAPIEndpointForCryptoPrices("ETH", "BTC", "bin"));
   // Logger.log(getAPIEndpointForCryptoPrices("ETH", "BTC", "cg"));
   // Logger.log(getAPIEndpointForCryptoPrices("ETH", "BTC", "cmc"));
   // Logger.log(getAPIEndpointForCryptoPrices("BTC", "USDT", "cro"));
   // Logger.log(getAPIEndpointForCryptoPrices("BTC", "ZAR", "CMC"));
   // Logger.log(getAPIEndpointForCryptoPrices("BTC", "ZAR", "byb"));
   // Logger.log(getAPIEndpointForCryptoPrices("BTC", "USDT", "okx"));
-  Logger.log(getAPIEndpointForCryptoPrices("BTC", "USDT", "gat"));
-  Logger.log(getAPIEndpointForCryptoPrices("BTC", "USDT", "mex"));
+  // Logger.log(getAPIEndpointForCryptoPrices("BTC", "USDT", "gat"));
+  // Logger.log(getAPIEndpointForCryptoPrices("BTC", "USDT", "mex"));
   // Logger.log("R 807 769,00".replace(/\s/g, ''));
 }

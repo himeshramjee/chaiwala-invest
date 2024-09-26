@@ -1,6 +1,10 @@
 // NB: Not for production use!
 // ========================================================================
 
+function getDEXScreenerPrice(contractID) {
+  apiPriceEndpoint = "https://api.dexscreener.com/latest/dex/tokens/{0}";
+}
+
 // https://thegraph.com/hosted-service/subgraph/uniswap/uniswap-v3
 function getUniSwapPrice(symbol) {
   const uniswapGraphEndpoint =
@@ -108,8 +112,9 @@ function getCryptoPrice(baseCurrency, quoteCurrency, providerShortCode) {
     response = UrlFetchApp.fetch(providerUrl, requestParams);
 
     if (!response || !response.getContentText()) {
-      let errMsg = "Failed to fetch data from API.";
+      let errMsg = "Failed to fetch data from API. Missing/invalid response.";
       Logger.log(errMsg);
+      Logger.log("Response: \n" + response);
       return errMsg;
     }
   } catch (err) {
@@ -177,7 +182,7 @@ function getAllBinancePrices() {
 
 function getCryptoPriceTest() {
   // Logger.log(getCryptoPrice("RVF", "USD", "cmc"));
-  // Logger.log(getCryptoPrice("BTC", "USDT", "bin"));
+  Logger.log(getCryptoPrice("BTC", "USDT", "byb"));
   // Logger.log(getCryptoPrice("BTC", "USDT", "cro"));
   // Logger.log(getCryptoPrice("BTC", "USDT", "val"));
   // Logger.log(getCryptoPrice("XRP", "BTC", "byb"));
@@ -185,8 +190,7 @@ function getCryptoPriceTest() {
   // Logger.log(getCryptoPrice("BTC", "USDT", "kuc"));
   // Logger.log(getCryptoPrice("OCTO", "USDT", "gat"));
   // Logger.log(getCryptoPrice("BTC", "USDT", "mexc"));
-
-  Logger.log(getCryptoPrice("BTC", "USDT", "uni"));
+  // Logger.log(getCryptoPrice("GDAG", "USDT", "uni"));
 }
 
 function getAllBinancePricesTest() {
