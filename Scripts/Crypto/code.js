@@ -93,22 +93,25 @@ function getCryptoPrice(baseCurrency, quoteCurrency, providerShortCode) {
   }
 
   let authData = getAPIProviderAPIAuthData(providerShortCode);
-  authHeaderName = authData.authKeyHeader || "x-no-auth";
-  authHeaderValue = authData.authKeyValue;
+  let authHeaderName = authData.authKeyHeader;
+  let authHeaderValue = authData.authKeyValue;
+
+  let requestPayload = {};
 
   let requestParams = {
     method: "get",
     headers: {
-      "content-type": "application/x-www-form-urlencoded",
-      [authHeaderName]: authHeaderValue, // [authHeaderName] uses concept of computed property names and allows for dynamically setting that here
+      "content-type": "application/json",
+      [authHeaderName]: authHeaderValue, // [authHeaderName] uses concept of computed property names and allows for dynamically setting the header key name
     },
     muteHttpExceptions: true,
-    payload: null,
+    payload: requestPayload,
+    validateHttpsCertificates: false,
   };
 
   let response;
   try {
-    Logger.log(UrlFetchApp.getRequest(providerUrl, requestParams));
+    // Logger.log(UrlFetchApp.getRequest(providerUrl, requestParams));
     response = UrlFetchApp.fetch(providerUrl, requestParams);
 
     if (!response || !response.getContentText()) {
@@ -119,9 +122,10 @@ function getCryptoPrice(baseCurrency, quoteCurrency, providerShortCode) {
     }
   } catch (err) {
     response = err;
+    return err;
   }
 
-  Logger.log(response);
+  // Logger.log(response);
   return extractPriceFromResponse(
     response,
     baseCurrency,
@@ -182,13 +186,12 @@ function getAllBinancePrices() {
 
 function getCryptoPriceTest() {
   // Logger.log(getCryptoPrice("RVF", "USD", "cmc"));
-  Logger.log(getCryptoPrice("BTC", "USDT", "byb"));
+  // Logger.log(getCryptoPrice("BTC", "USDT", "byb"));
   // Logger.log(getCryptoPrice("BTC", "USDT", "cro"));
   // Logger.log(getCryptoPrice("BTC", "USDT", "val"));
-  // Logger.log(getCryptoPrice("XRP", "BTC", "byb"));
   // Logger.log(getCryptoPrice("BTC", "USDT", "okx"));
-  // Logger.log(getCryptoPrice("BTC", "USDT", "kuc"));
-  // Logger.log(getCryptoPrice("OCTO", "USDT", "gat"));
+  Logger.log(getCryptoPrice("BTC", "USDT", "kuc"));
+  // Logger.log(getCryptoPrice("BTC", "USDT", "gat"));
   // Logger.log(getCryptoPrice("BTC", "USDT", "mexc"));
   // Logger.log(getCryptoPrice("GDAG", "USDT", "uni"));
 }
