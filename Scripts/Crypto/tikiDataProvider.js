@@ -1,7 +1,7 @@
 // NB: Not for production use! Price accuracy hasn't been checked and there's zero error handling
 // As providers grow, the code will need to be refactored to make this look more like a provider pattern
 // ========================================================================
-const DEFAULT_DATA_PROVIDER_SHORT_CODE = "BYB";
+const DEFAULT_SOURCE_DATA_PROVIDER_SHORT_CODE = "BYB";
 const DEFAULT_AGGREGATE_DATA_PROVIDER_SHORT_CODE = "CHAI";
 
 var aggregateDataProviders = [
@@ -160,22 +160,30 @@ var dataProviders = [
       apiKeyValue: getAggregateDataProviderData().apiKey,
     },
   },
+  {
+    id: 12,
+    name: "bitget.com",
+    shortCode: "BITG",
+    websiteUrl: "https://bitget.com",
+    apiEndpoint: getAggregateDataProviderData().apiEndpoint, // "https://api.bitget.com"
+    apiRootPath: "/bitg",
+    apiSymbolPricePath: "/price?symbol={0}{1}", // "api/v2/spot/market/tickers?symbol=BTCUSDT",
+    auth: {
+      apiKeyHeader: getAggregateDataProviderData().apiAuthHeaderName,
+      apiKeyValue: getAggregateDataProviderData().apiKey,
+    },
+  },
 ];
 
 function getAPIProviderAPIAuthData(
-  providerShortCode = DEFAULT_DATA_PROVIDER_SHORT_CODE
+  providerShortCode = DEFAULT_SOURCE_DATA_PROVIDER_SHORT_CODE
 ) {
-  let authData = {
-    authKeyHeader: "",
-    authKeyValue: "",
-  };
-
-  var x = providerShortCode.trim().length;
+  let authData = {};
 
   providerShortCode =
-    !providerShortCode || providerShortCode.trim().length == 3
+    !providerShortCode || providerShortCode.trim().length >= 3
       ? providerShortCode.toUpperCase()
-      : DEFAULT_DATA_PROVIDER_SHORT_CODE;
+      : DEFAULT_SOURCE_DATA_PROVIDER_SHORT_CODE;
 
   dataProviders.forEach((provider) => {
     if (provider.shortCode === providerShortCode) {
@@ -194,7 +202,7 @@ function getAggregateDataProviderData(
   let providerData = {};
 
   providerShortCode =
-    !providerShortCode || providerShortCode.trim().length == 3
+    !providerShortCode || providerShortCode.trim().length >= 3
       ? providerShortCode.toUpperCase()
       : DEFAULT_AGGREGATE_DATA_PROVIDER_SHORT_CODE;
 
@@ -232,6 +240,7 @@ function getAPIEndpointForCryptoPrices(
         provider.apiSymbolPricePath;
       url = url.replace("{0}", baseCurrency);
       url = url.replace("{1}", quoteCurrency);
+      return;
     }
   });
 
@@ -303,6 +312,11 @@ function extractPriceFromResponse(
       case "MEXC":
         if (payload && payload) {
           price = payload.price;
+        }
+        break;
+      case "BITG":
+        if (payload && payload.data && payload.data[0]) {
+          price = payload.data[0].lastPr;
         }
         break;
     }

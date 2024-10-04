@@ -190,10 +190,11 @@ function getCryptoPriceTest() {
   // Logger.log(getCryptoPrice("BTC", "USDT", "cro"));
   // Logger.log(getCryptoPrice("BTC", "USDT", "val"));
   // Logger.log(getCryptoPrice("BTC", "USDT", "okx"));
-  Logger.log(getCryptoPrice("BTC", "USDT", "kuc"));
+  // Logger.log(getCryptoPrice("BTC", "USDT", "kuc"));
   // Logger.log(getCryptoPrice("BTC", "USDT", "gat"));
   // Logger.log(getCryptoPrice("BTC", "USDT", "mexc"));
   // Logger.log(getCryptoPrice("GDAG", "USDT", "uni"));
+  Logger.log(getCryptoPrice("BTC", "USDT", "bitg"));
 }
 
 function getAllBinancePricesTest() {
