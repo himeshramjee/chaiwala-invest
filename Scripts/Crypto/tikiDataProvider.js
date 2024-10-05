@@ -12,7 +12,6 @@ var aggregateDataProviders = [
     apiAuthHeaderName: "x-api-key",
     apiKey: "",
     apiEndpoint: "https://api.himesh.ramjee.co.za",
-    apiContentType: "",
   },
 ];
 
