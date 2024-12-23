@@ -3,8 +3,8 @@ const chaiwalaProviderAPIConfig = {
   docs: "(no docs available)",
   url: "https://api.himesh.ramjee.co.za/",
   pathCoinBalance: "{provider}/balance",
-  apiAuthHeaderName: "x-api-key",
-  apiKey: "Mz7J7zfH7N4SeEjYS63NN9cGmjm9FXHl3JdHBgKA",
+  apiAuthHeaderName: "",
+  apiKey: "",
 };
 
 function getAPIEndpointForCoinsBalance(providerShortCode) {
