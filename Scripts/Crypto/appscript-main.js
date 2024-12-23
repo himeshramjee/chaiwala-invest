@@ -74,6 +74,24 @@ function getUniSwapPrice(symbol) {
     : 0;
 }
 
+function getAllCoinsBalance(providerShortCode) {
+  const providerUrl = getAPIEndpointForCoinsBalance(providerShortCode);
+
+  if (!providerUrl) {
+    Browser.msgBox("Oops, failed to generate provider API endpoint url");
+    return;
+  }
+
+  console.log("Provider: " + providerShortCode);
+  console.log("Provider URL: " + providerUrl);
+
+  const response = callProviderAPI(providerShortCode, providerUrl);
+
+  console.log(response);
+
+  return response;
+}
+
 function getCryptoPrice(baseCurrency, quoteCurrency, providerShortCode) {
   if (providerShortCode && providerShortCode.toUpperCase() === "UNI") {
     // TODO: Support quoteCurrency
@@ -92,38 +110,7 @@ function getCryptoPrice(baseCurrency, quoteCurrency, providerShortCode) {
     return;
   }
 
-  let authData = getAPIProviderAPIAuthData(providerShortCode);
-  let authHeaderName = authData.authKeyHeader;
-  let authHeaderValue = authData.authKeyValue;
-
-  let requestPayload = {};
-
-  let requestParams = {
-    method: "get",
-    headers: {
-      "content-type": "application/json",
-      [authHeaderName]: authHeaderValue, // [authHeaderName] uses concept of computed property names and allows for dynamically setting the header key name
-    },
-    muteHttpExceptions: true,
-    payload: requestPayload,
-    validateHttpsCertificates: false,
-  };
-
-  let response;
-  try {
-    // Logger.log(UrlFetchApp.getRequest(providerUrl, requestParams));
-    response = UrlFetchApp.fetch(providerUrl, requestParams);
-
-    if (!response || !response.getContentText()) {
-      let errMsg = "Failed to fetch data from API. Missing/invalid response.";
-      Logger.log(errMsg);
-      Logger.log("Response: \n" + response);
-      return errMsg;
-    }
-  } catch (err) {
-    response = err;
-    return err;
-  }
+  const response = callProviderAPI(providerShortCode, providerUrl);
 
   // Logger.log(response);
   return extractPriceFromResponse(
@@ -132,6 +119,48 @@ function getCryptoPrice(baseCurrency, quoteCurrency, providerShortCode) {
     quoteCurrency,
     providerShortCode
   );
+}
+
+function callProviderAPI(providerShortCode, providerUrl) {
+  let authData = getAPIProviderAPIAuthData(providerShortCode);
+  let authHeaderName = authData.authKeyHeader;
+  let authHeaderValue = authData.authKeyValue;
+
+  let requestPayload = {};
+
+  let requestParams = {
+    method: "GET",
+    headers: {
+      "content-type": "application/json",
+      // [authHeaderName] uses concept of computed property names and allows for dynamically setting the header key name
+      [authHeaderName]: authHeaderValue,
+    },
+    muteHttpExceptions: true,
+    payload: requestPayload,
+    validateHttpsCertificates: false,
+  };
+
+  let response;
+  try {
+    Logger.log(UrlFetchApp.getRequest(providerUrl, requestParams));
+    response = UrlFetchApp.fetch(providerUrl, requestParams);
+
+    if (!response || !response.getContentText()) {
+      let errMsg = "Failed to fetch data from API. Missing/invalid response.";
+      Logger.log(errMsg);
+      Logger.log("Response: \n" + response);
+      return errMsg;
+    }
+
+    return response;
+  } catch (err) {
+    response = err;
+    return err;
+  }
+}
+
+function getAllCoinsBalanceTest() {
+  Logger.log(getAllCoinsBalance("BYB"));
 }
 
 function getCryptoPriceTest() {
@@ -145,10 +174,6 @@ function getCryptoPriceTest() {
   // Logger.log(getCryptoPrice("BTC", "USDT", "mexc"));
   // Logger.log(getCryptoPrice("GDAG", "USDT", "uni"));
   Logger.log(getCryptoPrice("BTC", "USDT", "bitg"));
-}
-
-function getAllBinancePricesTest() {
-  getAllBinancePrices();
 }
 
 function getUniSwapPriceTest() {
