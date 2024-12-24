@@ -10,7 +10,7 @@ var aggregateDataProviders = [
     shortCode: "CHAI",
     websiteUrl: "https://himesh.ramjee.co.za",
     apiAuthHeaderName: "x-api-key",
-    apiKey: "",
+    apiKey: "tvIbflZFaV1PkmVdTgDnt3MQE3YJ0mvA1xgzSjJQ",
     apiEndpoint: "https://api.himesh.ramjee.co.za",
   },
 ];
@@ -22,7 +22,7 @@ var dataProviders = [
     shortCode: "CMC",
     websiteUrl: "https://coinmarketcap.com",
     apiEndpoint: "https://pro-api.coinmarketcap.com",
-    apiRootPath: "/v1/cryptocurrency",
+    apiRootPath: "v1/cryptocurrency",
     apiSymbolPricePath: "/quotes/latest?symbol={0}&convert={1}",
     auth: {
       apiKeyHeader: "X-CMC_PRO_API_KEY",
@@ -35,7 +35,7 @@ var dataProviders = [
     shortCode: "CG",
     websiteUrl: "https://coingecko.com",
     apiEndpoint: "https://api.coingecko.com/api",
-    apiRootPath: "/v3/simple",
+    apiRootPath: "v3/simple",
     apiSymbolPricePath: "/price?ids={0}&vs_currencies={1}",
     auth: {
       apiKeyHeader: "",
@@ -48,7 +48,7 @@ var dataProviders = [
     shortCode: "BIN",
     websiteUrl: "https://binance.com",
     apiEndpoint: getAggregateDataProviderData().apiEndpoint, // "https://api.binance.com"
-    apiRootPath: "/binance",
+    apiRootPath: "binance",
     apiSymbolPricePath: "/price?symbol={0}{1}", // "/api/v3/ticker/price"
     auth: {
       apiKeyHeader: getAggregateDataProviderData().apiAuthHeaderName,
@@ -61,7 +61,7 @@ var dataProviders = [
     shortCode: "CRO",
     websiteUrl: "https://crypto.com",
     apiEndpoint: getAggregateDataProviderData().apiEndpoint, // "https://api.crypto.com",
-    apiRootPath: "/cryptocom",
+    apiRootPath: "cryptocom",
     apiSymbolPricePath: "/price?instrument_name={0}_{1}", // "/v2/public"
     auth: {
       apiKeyHeader: getAggregateDataProviderData().apiAuthHeaderName,
@@ -74,7 +74,7 @@ var dataProviders = [
     shortCode: "VAL",
     websiteUrl: "https://valr.com",
     apiEndpoint: getAggregateDataProviderData().apiEndpoint, // "https://api.valr.com",
-    apiRootPath: "/valr",
+    apiRootPath: "valr",
     apiSymbolPricePath: "/price?symbol={0}{1}", // "/v1/public/{0}{1}/marketsummary",
     auth: {
       apiKeyHeader: getAggregateDataProviderData().apiAuthHeaderName,
@@ -87,7 +87,7 @@ var dataProviders = [
     shortCode: "BYB",
     websiteUrl: "https://bybit.com",
     apiEndpoint: getAggregateDataProviderData().apiEndpoint, // "https://api.bybit.com"
-    apiRootPath: "/bybit",
+    apiRootPath: "bybit",
     apiSymbolPricePath: "/price?category=spot&symbol={0}{1}", // "/v2/public",
     auth: {
       apiKeyHeader: getAggregateDataProviderData().apiAuthHeaderName,
@@ -100,7 +100,7 @@ var dataProviders = [
     shortCode: "OKX",
     websiteUrl: "https://okx.com",
     apiEndpoint: getAggregateDataProviderData().apiEndpoint, // "https://www.okx.com"
-    apiRootPath: "/okx",
+    apiRootPath: "okx",
     apiSymbolPricePath: "/price?symbol={0}-{1}", // "/api/v5/market/index-tickers?instId={0}-{1}",
     auth: {
       apiKeyHeader: getAggregateDataProviderData().apiAuthHeaderName,
@@ -113,7 +113,7 @@ var dataProviders = [
     shortCode: "KUC",
     websiteUrl: "https://kucoin.com",
     apiEndpoint: getAggregateDataProviderData().apiEndpoint, // "https://api.kucoin.com"
-    apiRootPath: "/kucoin",
+    apiRootPath: "kucoin",
     apiSymbolPricePath: "/price?symbol={0}-{1}", // "/api/v1/market/orderbook/level1?symbol={0}-{1}"
     auth: {
       apiKeyHeader: getAggregateDataProviderData().apiAuthHeaderName,
@@ -126,7 +126,7 @@ var dataProviders = [
     shortCode: "GAT",
     websiteUrl: "https://gate.io",
     apiEndpoint: getAggregateDataProviderData().apiEndpoint, // "https://api.gateio.ws/"
-    apiRootPath: "/gateio",
+    apiRootPath: "gateio",
     apiSymbolPricePath: "/price?currency_pair={0}_{1}", // "/api/v4/spot/tickers?currency_pair={0}_{1}"
     auth: {
       apiKeyHeader: getAggregateDataProviderData().apiAuthHeaderName,
@@ -139,7 +139,7 @@ var dataProviders = [
     shortCode: "MEXC",
     websiteUrl: "https://mexc.com",
     apiEndpoint: getAggregateDataProviderData().apiEndpoint, // "https://api.mexc.com"
-    apiRootPath: "/mexc",
+    apiRootPath: "mexc",
     apiSymbolPricePath: "/price?symbol={0}{1}", // "/api/v3/ticker/price?symbol={0}{1}"
     auth: {
       apiKeyHeader: getAggregateDataProviderData().apiAuthHeaderName,
@@ -152,7 +152,7 @@ var dataProviders = [
     shortCode: "DEXS",
     websiteUrl: "https://dexscreener.com",
     apiEndpoint: getAggregateDataProviderData().apiEndpoint, // "https://api.mexc.com"
-    apiRootPath: "/dexs",
+    apiRootPath: "dexs",
     apiSymbolPricePath: "https://api.dexscreener.com/latest/dex/tokens/{0}",
     auth: {
       apiKeyHeader: getAggregateDataProviderData().apiAuthHeaderName,
@@ -165,7 +165,7 @@ var dataProviders = [
     shortCode: "BITG",
     websiteUrl: "https://bitget.com",
     apiEndpoint: getAggregateDataProviderData().apiEndpoint, // "https://api.bitget.com"
-    apiRootPath: "/bitg",
+    apiRootPath: "bitg",
     apiSymbolPricePath: "/price?symbol={0}{1}", // "api/v2/spot/market/tickers?symbol=BTCUSDT",
     auth: {
       apiKeyHeader: getAggregateDataProviderData().apiAuthHeaderName,
@@ -235,6 +235,7 @@ function getAPIEndpointForCryptoPrices(
     if (provider.shortCode === providerShortCode) {
       url =
         provider.apiEndpoint +
+        "/" +
         provider.apiRootPath +
         provider.apiSymbolPricePath;
       url = url.replace("{0}", baseCurrency);

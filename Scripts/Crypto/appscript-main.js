@@ -74,22 +74,19 @@ function getUniSwapPrice(symbol) {
     : 0;
 }
 
-function getAllCoinsBalance(providerShortCode) {
-  const providerUrl = getAPIEndpointForCoinsBalance(providerShortCode);
+function getAllCoinsBalance(providerShortCode, coinsFilter) {
+  const providerUrl = getAPIEndpointForCoinsBalance(
+    providerShortCode,
+    coinsFilter
+  );
 
   if (!providerUrl) {
     Browser.msgBox("Oops, failed to generate provider API endpoint url");
     return;
   }
 
-  console.log("Provider: " + providerShortCode);
-  console.log("Provider URL: " + providerUrl);
-
   const response = callProviderAPI(providerShortCode, providerUrl);
-
-  console.log(response);
-
-  return response;
+  return extractAllCoinsBalanceResult(response);
 }
 
 function getCryptoPrice(baseCurrency, quoteCurrency, providerShortCode) {
@@ -140,27 +137,15 @@ function callProviderAPI(providerShortCode, providerUrl) {
     validateHttpsCertificates: false,
   };
 
-  let response;
-  try {
-    Logger.log(UrlFetchApp.getRequest(providerUrl, requestParams));
-    response = UrlFetchApp.fetch(providerUrl, requestParams);
-
-    if (!response || !response.getContentText()) {
-      let errMsg = "Failed to fetch data from API. Missing/invalid response.";
-      Logger.log(errMsg);
-      Logger.log("Response: \n" + response);
-      return errMsg;
-    }
-
-    return response;
-  } catch (err) {
-    response = err;
-    return err;
-  }
+  Logger.log(UrlFetchApp.getRequest(providerUrl, requestParams));
+  return UrlFetchApp.fetch(providerUrl, requestParams);
 }
 
 function getAllCoinsBalanceTest() {
-  Logger.log(getAllCoinsBalance("BYB"));
+  // Logger.log(getAllCoinsBalance("BYB"));
+  Logger.log(getAllCoinsBalance("BYB", "ETH"));
+  Logger.log(getAllCoinsBalance("BYB", "ETH, KAS, SUI"));
+  // Logger.log(getAllCoinsBalance("BYB", "  ETH, SOL,   KAS.  "));
 }
 
 function getCryptoPriceTest() {

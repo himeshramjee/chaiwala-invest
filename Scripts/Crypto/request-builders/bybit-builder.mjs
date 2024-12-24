@@ -71,7 +71,10 @@ function getRequestData(queryStringParams) {
 function builQueryString(queryParams) {
   return Object.keys(queryParams)
     .sort()
-    .map((key) => `${key}=${queryParams[key]}`)
+    .map(
+      (key) =>
+        `${key}=${encodeURIComponent(queryParams[key].replace(/\s/g, ""))}`
+    )
     .join("&");
 }
 
