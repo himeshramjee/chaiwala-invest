@@ -4,7 +4,7 @@ const chaiwalaProviderAPIConfig = {
   url: "https://api.himesh.ramjee.co.za/",
   pathCoinBalance: "{provider}/balance",
   pathCoinsFilter: "?coin={coinsFilter}",
-  apiAuthHeaderName: "",
+  apiAuthHeaderName: "x-api-key",
   apiKey: "",
 };
 
@@ -64,7 +64,7 @@ function extractAllCoinsBalanceResult(response) {
 function formatCSV(arrCoinBalances) {
   let result = "";
 
-  console.log(arrCoinBalances);
+  console.log("arrCoinBalances: ", arrCoinBalances);
 
   if (arrCoinBalances) {
     arrCoinBalances.map((b) => {

@@ -2,14 +2,17 @@
 // https://bybit-exchange.github.io/docs/v5/error
 // https://www.postman.com/postman/postman-answers/overview
 
-import bybitProviderAPIConfig from "../exchange-configs/bybit-config.mjs";
+import { bybitProviderAPIConfig } from "../exchange-configs/bybit-config.mjs";
 import buildBybitRequest from "../request-builders/bybit-builder.mjs";
 
 export async function getAllCoinsBalance(coinsFilter) {
-  const { url, headers } = buildBybitRequest({
-    accountType: "UNIFIED",
-    coin: coinsFilter || bybitProviderAPIConfig.coinsToQuery,
-  });
+  const { url, headers } = buildBybitRequest(
+    {
+      accountType: "UNIFIED",
+      coin: coinsFilter || bybitProviderAPIConfig.coinsToQuery,
+    },
+    bybitProviderAPIConfig.paths.ALL_COINS_BALANCE
+  );
 
   // https://www.npmjs.com/package/node-fetch
   // const response = await fetch(apiEndpoint, requestParams);
@@ -47,6 +50,27 @@ export async function getAllCoinsBalance(coinsFilter) {
     return responseJson;
   } else {
     return responseJson?.result?.balance;
+  }
+}
+
+export async function getBybitServerTime() {
+  const { url, headers } = buildBybitRequest(
+    "",
+    bybitProviderAPIConfig.paths.SERVER_TIME
+  );
+
+  try {
+    console.log("Calling Time api: ", url);
+    const response = await fetch(url, {
+      method: "GET",
+      header: headers,
+    });
+    const responseJson = await response.json();
+
+    return parseFloat(responseJson.result.timeSecond); // Convert string to float
+  } catch (error) {
+    console.error("Error fetching Bybit server time:", error);
+    throw error; // Rethrow the error for handling in the caller
   }
 }
 

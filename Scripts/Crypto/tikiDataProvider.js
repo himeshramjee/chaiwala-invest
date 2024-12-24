@@ -10,7 +10,7 @@ var aggregateDataProviders = [
     shortCode: "CHAI",
     websiteUrl: "https://himesh.ramjee.co.za",
     apiAuthHeaderName: "x-api-key",
-    apiKey: "tvIbflZFaV1PkmVdTgDnt3MQE3YJ0mvA1xgzSjJQ",
+    apiKey: "",
     apiEndpoint: "https://api.himesh.ramjee.co.za",
   },
 ];

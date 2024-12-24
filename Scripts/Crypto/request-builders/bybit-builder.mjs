@@ -1,12 +1,12 @@
-import bybitProviderAPIConfig from "../exchange-configs/bybit-config.mjs";
+import { bybitProviderAPIConfig } from "../exchange-configs/bybit-config.mjs";
 import { createHmac } from "crypto";
 
-export default function buildBybitRequest(queryParams) {
-  return generateCryptoSignature(queryParams);
+export default function buildBybitRequest(queryParams, apiPath) {
+  return generateCryptoSignature(queryParams, apiPath);
 }
 
-function generateCryptoSignature(queryParams) {
-  var { url, payload, secretKey } = getRequestData(queryParams);
+function generateCryptoSignature(queryParams, apiPath) {
+  var { url, payload, secretKey } = getRequestData(queryParams, apiPath);
 
   // Create a hex HMAC using SHA-256
 
@@ -48,17 +48,13 @@ function generateCryptoSignature(queryParams) {
 }
 
 // Generate HMAC SHA256 signature payload
-function getRequestData(queryStringParams) {
+function getRequestData(queryStringParams, apiPath) {
   const timestamp = bybitProviderAPIConfig.timestamp;
   const apiKey = bybitProviderAPIConfig.apiKey;
   const recvWindow = bybitProviderAPIConfig.recvWindow;
   const apiSecret = bybitProviderAPIConfig.apiKeySecret;
   const queryParams = builQueryString(queryStringParams);
-  const url =
-    bybitProviderAPIConfig.url +
-    bybitProviderAPIConfig.pathAllCoinsBalance +
-    "?" +
-    queryParams;
+  const url = bybitProviderAPIConfig.url + apiPath + "?" + queryParams;
 
   // This ordering is important per the documentation: https://bybit-exchange.github.io/docs/v5/guide
   // "# rule: timestamp+api_key+recv_window+queryString"
