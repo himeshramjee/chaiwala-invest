@@ -47,18 +47,42 @@ function getAPIEndpointForCoinsBalanceTest() {
 }
 
 function extractAllCoinsBalanceResult(response) {
-  const payload = response.getContentText();
+  const payloadJson = JSON.parse(response.getContentText());
 
-  if (payload?.retCode && payload?.retCode > 0) {
-    return payload;
+  if (payloadJson?.retCode && payloadJson?.retCode > 0) {
+    return payloadJson.retMsg;
   } else {
-    const coinCount = payload.length || 1;
-    if (coinCount == 1) {
+    if (payloadJson.length == 1) {
       // Single coin result, return balance
-      return payload[0].walletBalance;
+      return payloadJson[0].walletBalance;
     }
-    return payload;
+    // Multiple coins returned so return CSV (mainly for Sheets use case)
+    return formatCSV(payloadJson);
   }
+}
+
+function formatCSV(arrCoinBalances) {
+  let result = "";
+
+  console.log(arrCoinBalances);
+
+  if (arrCoinBalances) {
+    arrCoinBalances.map((b) => {
+      if (b.walletBalance != b.transferBalance) {
+        console.warn(
+          "Transfer vs wallet balances differ for " +
+            b.coin +
+            ": " +
+            b.transferBalance +
+            " vs " +
+            b.walletBalance
+        );
+      }
+      result += b.coin + "," + b.walletBalance + "\n";
+    });
+  }
+
+  return result;
 }
 
 // export default chaiwalaProviderAPIConfig;
