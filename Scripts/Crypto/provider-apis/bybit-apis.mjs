@@ -2,10 +2,10 @@
 // https://bybit-exchange.github.io/docs/v5/error
 // https://www.postman.com/postman/postman-answers/overview
 
-import { bybitProviderAPIConfig } from "../exchange-configs/bybit-config.mjs";
+import { bybitProviderAPIConfig } from "../provider-configs/bybit-config.mjs";
 import buildBybitRequest from "../request-builders/bybit-builder.mjs";
 
-export async function getAllCoinsBalance(coinsFilter) {
+export async function getAllCoinsBalanceBybit(coinsFilter) {
   const { url, headers } = buildBybitRequest(
     {
       accountType: "UNIFIED",

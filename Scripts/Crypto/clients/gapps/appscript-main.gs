@@ -143,8 +143,9 @@ function callProviderAPI(providerShortCode, providerUrl) {
 
 function getAllCoinsBalanceTest() {
   // Logger.log(getAllCoinsBalance("BYB"));
-  Logger.log(getAllCoinsBalance("BYB", "ETH"));
-  Logger.log(getAllCoinsBalance("BYB", "ETH, KAS, SUI"));
+  Logger.log(getAllCoinsBalance("BITG"));
+  // Logger.log(getAllCoinsBalance("BYB", "ETH"));
+  // Logger.log(getAllCoinsBalance("BYB", "ETH, KAS, SUI"));
   // Logger.log(getAllCoinsBalance("BYB", "  ETH, SOL,   KAS.  "));
 }
 

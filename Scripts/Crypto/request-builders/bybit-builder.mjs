@@ -1,4 +1,4 @@
-import { bybitProviderAPIConfig } from "../exchange-configs/bybit-config.mjs";
+import { bybitProviderAPIConfig } from "../provider-configs/bybit-config.mjs";
 import { createHmac } from "crypto";
 
 export default function buildBybitRequest(queryParams, apiPath) {
@@ -53,7 +53,7 @@ function getRequestData(queryStringParams, apiPath) {
   const apiKey = bybitProviderAPIConfig.apiKey;
   const recvWindow = bybitProviderAPIConfig.recvWindow;
   const apiSecret = bybitProviderAPIConfig.apiKeySecret;
-  const queryParams = builQueryString(queryStringParams);
+  const queryParams = buildQueryString(queryStringParams);
   const url = bybitProviderAPIConfig.url + apiPath + "?" + queryParams;
 
   // This ordering is important per the documentation: https://bybit-exchange.github.io/docs/v5/guide
@@ -64,7 +64,7 @@ function getRequestData(queryStringParams, apiPath) {
   return { url: url, payload: payloadParts, secretKey: secretKey };
 }
 
-function builQueryString(queryParams) {
+function buildQueryString(queryParams) {
   return Object.keys(queryParams)
     .sort()
     .map(

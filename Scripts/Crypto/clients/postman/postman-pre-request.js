@@ -21,6 +21,7 @@ class PreRequest {
 
   static addHeadersToPmRequest(arrHeadersToAdd) {
     pm.request.headers.add({ key: "Content-Type", value: "application/json" });
+    pm.request.headers.add({ key: "locale", value: "en-US" });
     pm.request.headers.add({ key: "Accept-Encoding", value: "gzip, deflate" });
 
     arrHeadersToAdd.forEach((header) => {
@@ -164,19 +165,11 @@ class BitgetPreRequest extends PreRequest {
       key: BitgetPreRequest.NAME_ACCESS_PASSPHRASE,
       value: this.#payload.apiAccessPassphrase,
     },
-    {
-      key: "locale",
-      value: "en-US",
-    },
-    {
-      key: "Content-Type",
-      value: "application/json",
-    },
   ];
 
   getPayloadSignature(payload) {
-    let hasQueryString = payload.queryString?.length > 0;
-    let addJsonBody = payload.method.toUpperCase() !== "GET";
+    const hasQueryString = payload.queryString?.length > 0;
+    const addJsonBody = payload.method.toUpperCase() !== "GET";
     const requestParams =
       payload.timestamp +
       payload.method.toUpperCase() +

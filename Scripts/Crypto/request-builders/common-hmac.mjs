@@ -33,7 +33,7 @@ function generatePayload(
   return { payloadParts: payloadParts, secretKey: secretKey };
 }
 
-function generateCyrptoUtilitiesSignature(
+function generateCryptoUtilitiesSignature(
   timestamp,
   apiKey,
   recvWindow,

@@ -66,9 +66,13 @@ function formatCSV(arrCoinBalances) {
 
   console.log("arrCoinBalances: ", arrCoinBalances);
 
-  if (arrCoinBalances) {
+  if (arrCoinBalances && !arrCoinBalances.error) {
     arrCoinBalances.map((b) => {
-      result += b.coin + "," + b.walletBalance || b.available + "\n";
+      if (b.walletBalance) {
+        result += b.coin + "," + b.walletBalance + "\n";
+      } else {
+        result += b.coin + "," + b.available + "\n";
+      }
     });
   }
 
