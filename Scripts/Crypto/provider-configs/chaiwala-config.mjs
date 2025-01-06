@@ -68,17 +68,7 @@ function formatCSV(arrCoinBalances) {
 
   if (arrCoinBalances) {
     arrCoinBalances.map((b) => {
-      if (b.walletBalance != b.transferBalance) {
-        console.warn(
-          "Transfer vs wallet balances differ for " +
-            b.coin +
-            ": " +
-            b.transferBalance +
-            " vs " +
-            b.walletBalance
-        );
-      }
-      result += b.coin + "," + b.walletBalance + "\n";
+      result += b.coin + "," + b.walletBalance || b.available + "\n";
     });
   }
 

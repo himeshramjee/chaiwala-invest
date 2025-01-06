@@ -1,5 +1,5 @@
-import { getAllCoinsBalance } from "./provider-apis/bybit-apis.mjs";
-import { timeSyncedWithProvider } from "./utilities/server-time-sync.mjs";
+import { getAllCoinsBalance } from "../../provider-apis/bybit-apis.mjs";
+import { timeSyncedWithProvider } from "../../utilities/server-time-sync.mjs";
 
 export const handler = async (event, context) => {
   console.log("Received event: ", JSON.stringify(event, null, 2));
