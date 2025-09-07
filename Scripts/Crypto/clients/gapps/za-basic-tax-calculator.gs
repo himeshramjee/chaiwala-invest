@@ -37,9 +37,9 @@ var taxTables = [
   { taxYear: 2023, rate: 45, min: 1731601, max: maxRangeHighestBracket, base: 614192 }
 ];
 
-var taxBracketMin;
-var taxRate;
-var taxBase;
+var taxBracketMin = 0;
+var taxRate = 0;
+var taxBase = 0;
 var cgtInclusionRate = 40; // 40%
 var cgtExclusionValue = 40000;
 
@@ -75,15 +75,9 @@ function setTaxBracketData(year, income) {
         }
       }
     });
-
-    if (!taxBracketMin || !taxRate) {
-    throw (
-      "Couldn't calculate estimated " +
-      year +
-      " tax amount for income value of " +
-      income
-    );
-  }
+  Logger.log("Tax Base: " + taxBase);
+  Logger.log("Tax Bracket Min: " + taxBracketMin);
+  Logger.log("Tax Rate: " + taxRate);
 }
 
 function calculateEstimatedTaxAmount(income) {
@@ -135,6 +129,15 @@ function cgtTest() {
   Logger.log("Taxable Income: " + taxableIncome);
   Logger.log("Marginal Tax Rate: " + taxRate);
   var result = GetZACapitalGainsTax(taxRate, 500000);
+  Logger.log("CGT: " + result);
+}
+
+function cgtTest_noIncome() {
+  var taxableIncome = 0;
+  var marginalTaxRate = GetZATaxRate(2026, taxableIncome);
+  Logger.log("Taxable Income: " + taxableIncome);
+  Logger.log("Marginal Tax Rate: " + marginalTaxRate);
+  var result = GetZACapitalGainsTax(marginalTaxRate, 500000);
   Logger.log("CGT: " + result);
 }
 
